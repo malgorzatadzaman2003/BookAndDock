@@ -1,20 +1,32 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout, authenticate, login
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.views import RedirectURLMixin
+from django.shortcuts import render, redirect, get_object_or_404, resolve_url
+from django.contrib.auth.decorators import login_required, login_not_required
+from django.contrib.auth import logout, authenticate, login, get_user_model
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.generic import FormView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django.contrib.auth import login as auth_login
 
+
+from BookDock import settings
 from .serializers import GuideSerializer
 from .models import Guide
-from .forms import GuideForm, CommentForm, SearchForm, RegisterForm
+from .forms import GuideForm, CommentForm, SearchForm, RegisterForm, EmailOnlyLoginForm
+
 
 def home(request):
     guides = Guide.objects.filter(status='published')
@@ -193,3 +205,21 @@ def delete_account(request):
     logout(request)
     return redirect('home')
 
+
+class LoginAdminView(FormView):
+    form_class = EmailOnlyLoginForm
+    template_name = "registration/login_admin.html"  # your HTML file
+    success_url = reverse_lazy('home')  # or whatever page you want to go after login
+
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Optional: create user if not found, or redirect/fail silently
+            user = User.objects.create_user(username=email, email=email)
+
+        auth_login(self.request, user)
+        return HttpResponseRedirect(self.get_success_url())

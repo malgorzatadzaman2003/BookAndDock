@@ -2,16 +2,42 @@
 {% block content %}
 <div class="register-container">
     <h2 class="register-title">Login</h2>
-    <form method="post" class="register-form">
+    <form method="post" id="login-form" class="register-form_admin">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
         <button type="submit" class="register-button">Login</button>
     </form>
-    <p style="text-align: center;">
-        Don't have an account? <a href="{% url 'register' %}">Register here</a>.
-    </p>
-    <p style="text-align: center;">
-        Forgot your password? <a href="{% url 'password_reset' %}">Reset it here</a>.
-    </p>
 </div>
+
+
+<script>
+document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent normal form POST
+
+    const email = document.getElementById('email').value;
+
+    fetch('http://localhost:8080/users', {
+        method: 'GET',
+        headers: {
+            'Authorization': email
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not OK');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Login success:', data);
+        // You can redirect or save the user here
+    })
+    .catch(error => {
+        console.error('Login failed:', error);
+    });
+});
+</script>
 {% endblock %}
