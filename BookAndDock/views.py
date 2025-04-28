@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import RedirectURLMixin
 from django.shortcuts import render, redirect, get_object_or_404, resolve_url
@@ -12,9 +14,9 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.views.decorators.cache import never_cache
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView
 from rest_framework.response import Response
@@ -223,3 +225,35 @@ class LoginAdminView(FormView):
 
         auth_login(self.request, user)
         return HttpResponseRedirect(self.get_success_url())
+
+
+@csrf_exempt
+def custom_login(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            username = data.get('username')
+            email = data.get('email')
+            first_name = data.get('name', '')
+            last_name = data.get('surname', '')
+            phone = data.get('phoneNumber', '')
+
+            if username and email:
+                user, created = User.objects.get_or_create(
+                    username=username,
+                    defaults={
+                        'email': email,
+                        'first_name': first_name,
+                        'last_name': last_name
+                    }
+                )
+                login(request, user)
+                return JsonResponse({"message": "Logged in successfully"})
+
+            return JsonResponse({"error": "Missing username or email"}, status=400)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid method"}, status=400)

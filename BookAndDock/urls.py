@@ -26,6 +26,7 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='registration//password_reset/password_reset_complete.html'), name='password_reset_complete'),
     path('delete_account/', delete_account, name='delete_account'),
     path("login_admin/", views.LoginAdminView.as_view(), name="login_admin"),
+    path('custom_login/', views.custom_login, name='custom_login'),
 
 # API Endpoint for Guides
     path('api/guides/', views.api_guides, name='api_guides'),
