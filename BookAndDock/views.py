@@ -266,3 +266,58 @@ def custom_login(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid method"}, status=400)
+
+
+@login_required
+def accept_dock(request, dock_id):
+    dock = get_object_or_404(Dock, pk=dock_id)
+
+    if dock.status == 'pending':
+        dock.status = 'published'
+        dock.save()
+
+    return redirect('docks')  # Redirect back to the profile_docks page
+
+@login_required
+def delete_dock(request, dock_id):
+    dock = get_object_or_404(Dock, pk=dock_id)
+    dock.delete()
+    return redirect('docks')  # Redirect back to the profile_docks page
+
+@login_required
+def dock_detail(request, dock_id):
+    dock = get_object_or_404(Dock, pk=dock_id)
+    dock_spaces = dock.spaces.all()  # Thanks to related_name
+
+    return render(request, 'dock_detail.html', {
+        'dock': dock,
+        'dock_spaces': dock_spaces
+    })
+
+@login_required
+def add_dock_space(request, dock_id):
+    dock = get_object_or_404(Dock, pk=dock_id)
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        length = request.POST.get('length')
+        width = request.POST.get('width')
+        price = request.POST.get('price')
+
+        DockSpace.objects.create(
+            dock=dock,
+            name=name,
+            length=length,
+            width=width,
+            price_per_day=price
+        )
+        return redirect('dock_detail', dock_id=dock.pk)
+
+    return render(request, 'add_dock_space.html', {'dock': dock})
+
+@login_required
+def delete_dock_space(request, space_id):
+    space = get_object_or_404(DockSpace, pk=space_id)
+    dock_id = space.dock.pk
+    space.delete()
+    return redirect('dock_detail', dock_id=dock_id)

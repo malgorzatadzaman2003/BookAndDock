@@ -28,6 +28,11 @@ urlpatterns = [
     path("login_admin/", views.LoginAdminView.as_view(), name="login_admin"),
     path('custom_login/', views.custom_login, name='custom_login'),
     path('profile_docks/', views.docks, name='docks'),
+    path('accept_dock/<int:dock_id>/', views.accept_dock, name='accept_dock'),
+    path('delete_dock/<int:dock_id>/', views.delete_dock, name='delete_dock'),
+    path('dock/<int:dock_id>/', views.dock_detail, name='dock_detail'),
+    path('dock/<int:dock_id>/add_space/', views.add_dock_space, name='add_dock_space'),
+    path('dock_space/<int:space_id>/delete/', views.delete_dock_space, name='delete_dock_space'),
 
 # API Endpoint for Guides
     path('api/guides/', views.api_guides, name='api_guides'),

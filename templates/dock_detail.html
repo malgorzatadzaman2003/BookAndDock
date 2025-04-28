@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="dock-detail-container">
+    <h2>{{ dock.name }}</h2>
+    <p><strong>Location:</strong> {{ dock.location }}</p>
+    <p><strong>Description:</strong> {{ dock.description }}</p>
+
+    <h3>Dock Spaces</h3>
+
+    {% if dock_spaces %}
+        <ul>
+            {% for space in dock_spaces %}
+                <li>
+                    {{ space.name }} - Size: {{ space.length }}m x {{ space.width }}m - Price per day: ${{ space.price_per_day }}
+                    <a href="{% url 'delete_dock_space' space.pk %}" class="delete-link">Delete</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No dock spaces yet.</p>
+    {% endif %}
+
+    <a href="{% url 'add_dock_space' dock.pk %}" class="add-recipe-btn">Add Dock Space</a>
+</div>
+
+{% endblock %}

@@ -54,3 +54,13 @@ class Dock(models.Model):
 
     def __str__(self):
         return self.name
+
+class DockSpace(models.Model):
+    dock = models.ForeignKey('Dock', on_delete=models.CASCADE, related_name='spaces')
+    name = models.CharField(max_length=255)
+    length = models.FloatField(help_text="Length of the dock space (in meters)")
+    width = models.FloatField(help_text="Width of the dock space (in meters)")
+    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.name} ({self.dock.name})"
