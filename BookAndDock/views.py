@@ -1,7 +1,9 @@
 import json
+import requests
 
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import RedirectURLMixin
+
 from django.shortcuts import render, redirect, get_object_or_404, resolve_url
 from django.contrib.auth.decorators import login_required, login_not_required
 from django.contrib.auth import logout, authenticate, login, get_user_model
@@ -24,9 +26,10 @@ from rest_framework.decorators import api_view
 from django.contrib.auth import login as auth_login
 
 
+
 from BookDock import settings
 from .serializers import GuideSerializer
-from .models import Guide, Dock
+from .models import Guide, Dock, DockSpace
 from .forms import GuideForm, CommentForm, SearchForm, RegisterForm, EmailOnlyLoginForm
 
 
@@ -148,11 +151,19 @@ def profile_articles(request):
 
 @login_required
 def docks(request):
-    published_docks = Dock.objects.filter(status='published')
-    docks_to_be_accepted = Dock.objects.filter(status='pending')
+    try:
+        response = requests.get('http://localhost:8080/ports')
+        docks = response.json() if response.status_code == 200 else []
+    except requests.exceptions.RequestException:
+        docks = []
+
+    # Split docks into two lists
+    published_docks = [dock for dock in docks if dock['approved']]
+    docks_to_be_accepted = [dock for dock in docks if not dock['approved']]
+
     return render(request, 'profile_docks.html', {
         'published_docks': published_docks,
-        'docks_to_be_accepted': docks_to_be_accepted
+        'docks_to_be_accepted': docks_to_be_accepted,
     })
 
 def register(request):
@@ -270,13 +281,32 @@ def custom_login(request):
 
 @login_required
 def accept_dock(request, dock_id):
-    dock = get_object_or_404(Dock, pk=dock_id)
+    try:
+        # First, get existing dock data (so we don't lose any fields)
+        get_response = requests.get(f'http://localhost:8080/ports/{dock_id}')
+        if get_response.status_code == 200:
+            dock_data = get_response.json()
 
-    if dock.status == 'pending':
-        dock.status = 'published'
-        dock.save()
+            # Update 'approved' to True
+            dock_data['is_approved'] = True
 
-    return redirect('docks')  # Redirect back to the profile_docks page
+            # Now send PUT request with updated data
+            put_response = requests.put(
+                f'http://localhost:8080/ports/{dock_id}',
+                json=dock_data
+            )
+
+            if put_response.status_code in [200, 204]:
+                print("Dock approved successfully!")
+            else:
+                print("Failed to approve dock.")
+        else:
+            print("Failed to fetch dock data.")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error approving dock: {e}")
+
+    return redirect('docks')  # Redirect back to docks page
 
 @login_required
 def delete_dock(request, dock_id):

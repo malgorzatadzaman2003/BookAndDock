@@ -4,7 +4,7 @@
 {% block content %}
 
 <div class="profile-container">
-    <h2>Docks Management </h2>
+    <h2>All Docks</h2>
 
     <!-- Tab Navigation -->
     <div class="tab-container">
@@ -18,14 +18,12 @@
             <section class="recipe-grid">
                 {% for dock in published_docks %}
                     <article class="recipe-card">
-                        <h2>{{ dock.name }}</h2> {# Assuming docks have a "name" field #}
-                        {% if dock.image %}
-                            <img src="{{ dock.image.url }}" alt="{{ dock.name }} image" class="recipe-image">
-                        {% endif %}
-                        <p class="date">Created: {{ dock.created_at }}</p>
-                        <a href="{% url 'dock_detail' dock.pk %}">View Dock</a>
-                        <a href="{% url 'home' %}" class="edit-link">Modify</a>
-                        <a href="{% url 'delete_dock' dock.pk %}" class="delete-link">Delete</a>
+                        <h2>{{ dock.name }}</h2>
+                        <p><strong>Location:</strong> {{ dock.location }}</p>
+                        <p>{{ dock.description }}</p>
+
+                        <a href="{% url 'dock_detail' dock.id %}">View Dock</a>
+                        <a href="{% url 'delete_dock' dock.id %}" class="delete-link">Delete</a>
                     </article>
                 {% endfor %}
             </section>
@@ -41,13 +39,12 @@
                 {% for dock in docks_to_be_accepted %}
                     <article class="recipe-card">
                         <h2>{{ dock.name }}</h2>
-                        {% if dock.image %}
-                            <img src="{{ dock.image.url }}" alt="{{ dock.name }} image" class="recipe-image">
-                        {% endif %}
-                        <p class="date">Created: {{ dock.created_at }}</p>
-                        <a href="{% url 'dock_detail' dock.pk %}">View Dock</a>
-                        <a href="{% url 'accept_dock' dock.pk %}" class="accept-link">Accept</a>
-                        <a href="{% url 'delete_dock' dock.pk %}" class="delete-link">Discard</a>
+                        <p><strong>Location:</strong> {{ dock.location }}</p>
+                        <p>{{ dock.description }}</p>
+
+                        <a href="{% url 'dock_detail' dock.id %}">View Dock</a>
+                        <a href="{% url 'accept_dock' dock.id %}" class="accept-link">Accept</a>
+                        <a href="{% url 'delete_dock' dock.id %}" class="delete-link">Discard</a>
                     </article>
                 {% endfor %}
             </section>
@@ -59,6 +56,6 @@
 </div>
 
 {% block extra_js %}
-    <script src="{% static 'profile.js' %}"></script> {# Handles tab switching #}
+    <script src="{% static 'profile.js' %}"></script>
 {% endblock %}
 {% endblock %}
