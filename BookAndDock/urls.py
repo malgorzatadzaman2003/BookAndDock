@@ -27,6 +27,7 @@ urlpatterns = [
     path('delete_account/', delete_account, name='delete_account'),
     path("login_admin/", views.LoginAdminView.as_view(), name="login_admin"),
     path('custom_login/', views.custom_login, name='custom_login'),
+    path('profile_docks/', views.docks, name='docks'),
 
 # API Endpoint for Guides
     path('api/guides/', views.api_guides, name='api_guides'),

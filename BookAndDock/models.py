@@ -38,3 +38,19 @@ class Comment(models.Model):
 
 
 
+class Dock(models.Model):
+    STATUS_CHOICES = [
+        ('published', 'Published'),
+        ('pending', 'Pending'),
+    ]
+
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    location = models.CharField(max_length=255, blank=True)
+    image = models.ImageField(upload_to='docks/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+    def __str__(self):
+        return self.name

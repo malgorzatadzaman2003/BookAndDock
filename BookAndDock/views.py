@@ -26,7 +26,7 @@ from django.contrib.auth import login as auth_login
 
 from BookDock import settings
 from .serializers import GuideSerializer
-from .models import Guide
+from .models import Guide, Dock
 from .forms import GuideForm, CommentForm, SearchForm, RegisterForm, EmailOnlyLoginForm
 
 
@@ -144,6 +144,15 @@ def profile_articles(request):
     return render(request, 'profile_articles.html', {
         'published_articles': published_articles,
         'unpublished_articles': unpublished_articles
+    })
+
+@login_required
+def docks(request):
+    published_docks = Dock.objects.filter(created_by=request.user, status='published')
+    docks_to_be_accepted = Dock.objects.filter(created_by=request.user, status='pending')
+    return render(request, 'profile_docks.html', {
+        'published_docks': published_docks,
+        'docks_to_be_accepted': docks_to_be_accepted
     })
 
 def register(request):
