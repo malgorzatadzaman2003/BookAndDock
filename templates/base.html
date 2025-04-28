@@ -42,7 +42,11 @@
                 </a>
             {% else %}
                 <a href="{% url 'login' %}">
-                    <span>Login</span>
+                    <span>Login admin</span>
+                    <span>👤</span>
+                </a>
+            <a href="{% url 'login' %}">
+                    <span>Login editor</span>
                     <span>👤</span>
                 </a>
         {% endif %}
