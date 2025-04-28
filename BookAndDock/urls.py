@@ -2,7 +2,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from .views import delete_account
-
+from .forms import CustomLoginForm
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -14,6 +14,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('recipe/<int:pk>/delete/', views.delete_guide, name='delete_guide'),
     path('recipe/<int:pk>/modify_guide/', views.modify_guide, name='modify_guide'),
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html', authentication_form=CustomLoginForm), name='login'),
     path('logout/', views.custom_logout, name='logout'),
     path('about/', views.about_view, name='about'),
     path('account/', views.account_view, name='account'),
