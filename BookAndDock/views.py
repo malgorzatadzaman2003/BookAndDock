@@ -148,8 +148,8 @@ def profile_articles(request):
 
 @login_required
 def docks(request):
-    published_docks = Dock.objects.filter(created_by=request.user, status='published')
-    docks_to_be_accepted = Dock.objects.filter(created_by=request.user, status='pending')
+    published_docks = Dock.objects.filter(status='published')
+    docks_to_be_accepted = Dock.objects.filter(status='pending')
     return render(request, 'profile_docks.html', {
         'published_docks': published_docks,
         'docks_to_be_accepted': docks_to_be_accepted

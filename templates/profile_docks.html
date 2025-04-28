@@ -23,9 +23,9 @@
                             <img src="{{ dock.image.url }}" alt="{{ dock.name }} image" class="recipe-image">
                         {% endif %}
                         <p class="date">Created: {{ dock.created_at }}</p>
-                        <a href="{% url 'dock_detail' dock.pk %}">View Dock</a>
-                        <a href="{% url 'modify_dock' dock.pk %}" class="edit-link">Modify</a>
-                        <a href="{% url 'delete_dock' dock.pk %}" class="delete-link">Delete</a>
+                        <a href="{% url 'home' %}">View Dock</a>
+                        <a href="{% url 'home' %}" class="edit-link">Modify</a>
+                        <a href="{% url 'home' %}" class="delete-link">Delete</a>
                     </article>
                 {% endfor %}
             </section>
@@ -45,9 +45,9 @@
                             <img src="{{ dock.image.url }}" alt="{{ dock.name }} image" class="recipe-image">
                         {% endif %}
                         <p class="date">Created: {{ dock.created_at }}</p>
-                        <a href="{% url 'dock_detail' dock.pk %}">View Dock</a>
-                        <a href="{% url 'modify_dock' dock.pk %}" class="edit-link">Modify</a>
-                        <a href="{% url 'delete_dock' dock.pk %}" class="delete-link">Delete</a>
+                        <a href="{% url 'home'  %}">View Dock</a>
+                        <a href="{% url 'home' %}" class="edit-link">Modify</a>
+                        <a href="{% url 'home' %}" class="delete-link">Delete</a>
                     </article>
                 {% endfor %}
             </section>
