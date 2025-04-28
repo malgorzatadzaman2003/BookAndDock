@@ -1,0 +1,6 @@
+Hi {{ user.username }},
+
+Please click the link below to activate your account:
+http://{{ domain }}{% url 'activate' uid=uid token=token %}
+
+If you did not sign up for an account, please ignore this email.

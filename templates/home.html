@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Guides
+{% endblock %}
+
+{% block content %}
+<h1>Latest Guides/Articles</h1>
+    
+    <form class="search">
+        {{ form }}
+    </form>
+<section class="recipe-grid">
+    {% for guide in guides %}
+        <article class="recipe-card">
+            <h3>{{ guide.title }} <small>({{ guide.get_category_display }})</small></h3>
+            {% if guide.image %}
+                <img src="{{ guide.image.url }}" alt="{{ guide.title }} image">
+            {% endif %}
+            <p class="date">Created on: {{ guide.created_at|date:"Y-m-d" }}</p>
+            <a href="{% url 'guide_detail' guide.pk %}">View Guide</a>
+        </article>
+    {% empty %}
+        <p>There are no posts available yet.</p>
+    {% endfor %}
+</section>
+
+{% endblock %}

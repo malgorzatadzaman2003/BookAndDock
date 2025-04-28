@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="register-container">
+    <!-- Profile image in a circle -->
+    <div class="profile-image-container">
+        <img src="{% static 'my-image.jpg' %}" alt="Your Image" class="profile-image">
+    </div>
+    
+    <!-- About text -->
+    <h1>About the Cooking Project</h1>
+    <p>Welcome to the Cooking Project! This platform allows users to share and discover amazing recipes.</p>
+
+    <section class="about-section">
+        <h2>What We Offer</h2>
+        <ul>
+            <li>📖 A collection of diverse and tested recipes</li>
+            <li>👨‍🍳 Cooking tips and techniques for all skill levels</li>
+            <li>💬 A vibrant community where food lovers can share and comment on recipes</li>
+            <li>🎥 Picture tutorials and step-by-step guides</li>
+        </ul>
+    </section>
+</div>
+{% endblock %}

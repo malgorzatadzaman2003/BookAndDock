@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="profile-container">
+    <h2>My Guides
+        <a href="{% url 'add_guide' %}" class="add-recipe-btn">➕</a>
+    </h2>
+
+    <!-- Tab Navigation -->
+    <div class="tab-container">
+        <button class="tab-button active" data-tab="published">Published Guides</button>
+        <button class="tab-button" data-tab="drafts">Drafts</button>
+    </div>
+
+    <!-- Published Guides Section -->
+    <div id="published" class="tab-content active">
+        {% if published_guides %}
+            <section class="recipe-grid">
+                {% for guide in published_guides %}
+                    <article class="recipe-card">
+                        <h2>{{ guide.title }}</h2>
+                        {% if guide.image %}
+                            <img src="{{ guide.image.url }}" alt="{{ guide.title }} image" class="recipe-image">
+                        {% endif %}
+                        <p class="date">Created: {{ guide.created_at }}</p>
+                        <a href="{% url 'guide_detail' guide.pk %}">View Guide</a>
+                        <a href="{% url 'modify_guide' guide.pk %}" class="edit-link">Modify</a>
+                        <a href="{% url 'delete_guide' guide.pk %}" class="delete-link">Delete</a>
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <p>No published guides yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Drafts Section -->
+    <div id="drafts" class="tab-content">
+        {% if unpublished_guides %}
+            <section class="recipe-grid">
+                {% for guide in unpublished_guides %}
+                    <article class="recipe-card">
+                        <h2>{{ guide.title }}</h2>
+                        {% if guide.image %}
+                            <img src="{{ guide.image.url }}" alt="{{ guide.title }} image" class="recipe-image">
+                        {% endif %}
+                        <p class="date">Created: {{ guide.created_at }}</p>
+                        <a href="{% url 'guide_detail' guide.pk %}">View Guide</a>
+                        <a href="{% url 'modify_guide' guide.pk %}" class="edit-link">Modify</a>
+                        <a href="{% url 'delete_guide' guide.pk %}" class="delete-link">Delete</a>
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <p>No unpublished guides yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+    {% block extra_js %}
+        <script src="{% static 'profile.js' %}"></script>
+{% endblock %}
+{% endblock %}

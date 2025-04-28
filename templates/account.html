@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="profile-container">
+    <h2>Hello Editor!</h2>
+
+    <!-- Delete Account Section -->
+    <div class="delete-account-container">
+        <h3>Delete Account</h3>
+        <p>If you delete your account, all your guides and articles will be removed permanently.</p>
+        <form method="post" action="{% url 'delete_account' %}">
+            {% csrf_token %}
+            <button type="submit" class="delete-account-btn">Delete Account</button>
+        </form>
+    </div>
+</div>
+
+    {% block extra_js %}
+        <script src="{% static 'profile.js' %}"></script>
+{% endblock %}
+{% endblock %}

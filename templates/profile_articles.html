@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="profile-container">
+    <h2>My Articles
+        <a href="{% url 'add_guide' %}" class="add-recipe-btn">➕</a>
+    </h2>
+
+    <!-- Tab Navigation -->
+    <div class="tab-container">
+        <button class="tab-button active" data-tab="published">Published Articles</button>
+        <button class="tab-button" data-tab="drafts">Drafts</button>
+    </div>
+
+    <!-- Published Guides Section -->
+    <div id="published" class="tab-content active">
+    {% if published_articles %}
+        <section class="recipe-grid">
+            {% for article in published_articles %}
+                <article class="recipe-card">
+                    <h2>{{ article.title }}</h2>
+                    {% if article.image %}
+                        <img src="{{ article.image.url }}" alt="{{ article.title }} image" class="recipe-image">
+                    {% endif %}
+                    <p class="date">Created: {{ article.created_at }}</p>
+                    <a href="{% url 'guide_detail' article.pk %}">View Article</a>
+                    <a href="{% url 'modify_guide' article.pk %}" class="edit-link">Modify</a>
+                    <a href="{% url 'delete_guide' article.pk %}" class="delete-link">Delete</a>
+                </article>
+            {% endfor %}
+        </section>
+    {% else %}
+        <p>No published articles yet.</p>
+    {% endif %}
+    </div>
+    
+    <div id="drafts" class="tab-content">
+        {% if unpublished_articles %}
+            <section class="recipe-grid">
+                {% for article in unpublished_articles %}
+                    <article class="recipe-card">
+                        <h2>{{ article.title }}</h2>
+                        {% if article.image %}
+                            <img src="{{ article.image.url }}" alt="{{ article.title }} image" class="recipe-image">
+                        {% endif %}
+                        <p class="date">Created: {{ article.created_at }}</p>
+                        <a href="{% url 'guide_detail' article.pk %}">View Article</a>
+                        <a href="{% url 'modify_guide' article.pk %}" class="edit-link">Modify</a>
+                        <a href="{% url 'delete_guide' article.pk %}" class="delete-link">Delete</a>
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <p>No unpublished articles yet.</p>
+        {% endif %}
+    </div>
+
+
+</div>
+
+    {% block extra_js %}
+        <script src="{% static 'profile.js' %}"></script>
+{% endblock %}
+{% endblock %}
