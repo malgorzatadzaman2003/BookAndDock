@@ -41,14 +41,19 @@
                     <span>⤷</span>
                 </a>
             {% else %}
-                <a href="{% url 'login' %}">
-                    <span>Login admin</span>
-                    <span>👤</span>
-                </a>
-            <a href="{% url 'login' %}">
-                    <span>Login editor</span>
-                    <span>👤</span>
-                </a>
+                <div class="dropdown">
+                    <button class="dropbtn">
+                        Login <span>👤</span>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="{% url 'login' %}">
+                            Login admin
+                        </a>
+                        <a href="{% url 'login' %}">
+                            Login editor
+                        </a>
+                    </div>
+                </div>
         {% endif %}
     </nav>
 </header>
