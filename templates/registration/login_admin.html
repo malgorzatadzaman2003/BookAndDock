@@ -34,7 +34,6 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
     .then(data => {
     console.log('Login success:', data);
 
-    // After successful backend check, now log user into Django
     fetch("{% url 'custom_login' %}", {
         method: "POST",
         headers: {

@@ -231,7 +231,7 @@ def delete_account(request):
 class LoginAdminView(FormView):
     form_class = EmailOnlyLoginForm
     template_name = "registration/login_admin.html"  # your HTML file
-    success_url = reverse_lazy('home')  # or whatever page you want to go after login
+    success_url = reverse_lazy('home')
 
     def form_valid(self, form):
         email = form.cleaned_data['email']
@@ -240,7 +240,7 @@ class LoginAdminView(FormView):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            # Optional: create user if not found, or redirect/fail silently
+
             user = User.objects.create_user(username=email, email=email)
 
         auth_login(self.request, user)
@@ -282,15 +282,12 @@ def custom_login(request):
 @login_required
 def accept_dock(request, dock_id):
     try:
-        # First, get existing dock data (so we don't lose any fields)
         get_response = requests.get(f'http://localhost:8080/ports/{dock_id}')
         if get_response.status_code == 200:
             dock_data = get_response.json()
 
-            # Update 'approved' to True
             dock_data['is_approved'] = True
 
-            # Now send PUT request with updated data
             put_response = requests.put(
                 f'http://localhost:8080/ports/{dock_id}',
                 json=dock_data
@@ -306,13 +303,13 @@ def accept_dock(request, dock_id):
     except requests.exceptions.RequestException as e:
         print(f"Error approving dock: {e}")
 
-    return redirect('docks')  # Redirect back to docks page
+    return redirect('docks')
 
 @login_required
 def delete_dock(request, dock_id):
     dock = get_object_or_404(Dock, pk=dock_id)
     dock.delete()
-    return redirect('docks')  # Redirect back to the profile_docks page
+    return redirect('docks')
 
 @login_required
 def dock_detail(request, dock_id):
