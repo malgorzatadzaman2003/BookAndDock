@@ -20,10 +20,10 @@
                     </button>
                     <div class="dropdown-content">
                         <a href="{% url 'profile_guides' %}">Guides</a>
-                        <a href="{% url 'profile_articles' %}">Articles</a>
-                        <a href="{% url 'profile_guides' %}">Promotion</a>
-                        <a href="{% url 'profile_guides' %}">Messages</a>
+                        {% if request.session.role == 'ADMIN' %}
+                        <a href="{% url 'home' %}"> Users</a>
                         <a href="{% url 'docks' %}">Docks</a>
+                        {% endif %}
                         <a href="{% url 'account' %}">Account</a>
                     </div>
                 </div>

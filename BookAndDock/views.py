@@ -16,7 +16,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
@@ -258,6 +258,7 @@ def custom_login(request):
             first_name = data.get('name', '')
             last_name = data.get('surname', '')
             phone = data.get('phoneNumber', '')
+            role = data.get('role')
 
             if username and email:
                 user, created = User.objects.get_or_create(
@@ -269,6 +270,9 @@ def custom_login(request):
                     }
                 )
                 login(request, user)
+
+                request.session['role'] = role
+
                 return JsonResponse({"message": "Logged in successfully"})
 
             return JsonResponse({"error": "Missing username or email"}, status=400)
@@ -289,7 +293,7 @@ def accept_dock(request, dock_id):
             dock_data['is_approved'] = True
 
             put_response = requests.put(
-                f'http://localhost:8080/ports/{dock_id}',
+                f'http://localhost:8080/ports/{dock_id}/approve',
                 json=dock_data
             )
 
@@ -307,19 +311,33 @@ def accept_dock(request, dock_id):
 
 @login_required
 def delete_dock(request, dock_id):
-    dock = get_object_or_404(Dock, pk=dock_id)
-    dock.delete()
-    return redirect('docks')
+    try:
+        response = requests.delete(f'http://localhost:8080/ports/{dock_id}')
+        if response.status_code in [200, 204]:
+            return redirect('docks')
+        else:
+            return HttpResponse("Failed to delete dock on backend", status=response.status_code)
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error: {e}", status=500)
 
 @login_required
 def dock_detail(request, dock_id):
-    dock = get_object_or_404(Dock, pk=dock_id)
-    dock_spaces = dock.spaces.all()  # Thanks to related_name
+    try:
+        # Fetch dock details from backend
+        dock_response = requests.get(f'http://localhost:8080/ports/{dock_id}')
+        if dock_response.status_code != 200:
+            return HttpResponse("Failed to retrieve dock details", status=dock_response.status_code)
+        dock = dock_response.json()
 
-    return render(request, 'dock_detail.html', {
-        'dock': dock,
-        'dock_spaces': dock_spaces
-    })
+        # (Optional placeholder - no dock spaces API yet)
+        dock_spaces = []  # Later fetch from /docking-spots/ when available
+
+        return render(request, 'dock_detail.html', {
+            'dock': dock,
+            'dock_spaces': dock_spaces
+        })
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error: {e}", status=500)
 
 @login_required
 def add_dock_space(request, dock_id):

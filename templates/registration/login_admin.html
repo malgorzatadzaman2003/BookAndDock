@@ -45,12 +45,13 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
             email: data.email,
             name: data.name,
             surname: data.surname,
-            phoneNumber: data.phoneNumber
+            phoneNumber: data.phoneNumber,
+            role: data.role
         })
     })
     .then(response => {
         if (response.ok) {
-            window.location.href = "{% url 'home' %}"; // Redirect to home
+            window.location.href = "{% url 'docks' %}"; // Redirect to home
         } else {
             console.error('Failed to log into Django');
         }
