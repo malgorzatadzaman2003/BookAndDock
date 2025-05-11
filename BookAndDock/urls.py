@@ -37,6 +37,9 @@ urlpatterns = [
     path('guide/<int:guide_id>/', views.guide_detail, name='guide_detail'),
     path('guide/<int:guide_id>/accept/', views.accept_guide, name='accept_guide'),
     path('guide/<int:guide_id>/delete/', views.delete_guide, name='delete_guide'),
+    path('admin-panel/users/', views.users, name='users'),
+    path('admin-panel/users/<int:user_id>/', views.user_detail, name='user_detail'),
+    path('admin-panel/users/<str:user_email>/ban/', views.ban_user, name='ban_user'),
 
 
 # API Endpoint for Guides

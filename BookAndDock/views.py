@@ -426,3 +426,37 @@ def guide_detail(request, guide_id):
         return render(request, 'guide_detail_admin.html', {'guide': guide})
     except requests.exceptions.RequestException as e:
         return HttpResponse(f"Error: {e}", status=500)
+
+@login_required
+def users(request):
+    try:
+        response = requests.get('http://localhost:8080/users/users')
+        users = response.json() if response.status_code == 200 else []
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error fetching users: {e}", status=500)
+
+    return render(request, 'admin_users.html', {'users': users})
+
+@login_required
+def ban_user(request, user_email):
+    try:
+        response = requests.delete(
+            'http://localhost:8080/users',
+            json={"email": user_email}
+        )
+        if response.status_code in [200, 204]:
+            return redirect('users')
+        return HttpResponse("Failed to ban user", status=response.status_code)
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error banning user: {e}", status=500)
+
+@login_required
+def user_detail(request, user_id):
+    try:
+        response = requests.get(f'http://localhost:8080/users/users/{user_id}')
+        if response.status_code != 200:
+            return HttpResponse("User not found", status=response.status_code)
+        user = response.json()
+        return render(request, 'user_detail.html', {'user': user})
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error fetching user: {e}", status=500)

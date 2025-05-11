@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="profile-container">
+    <h2>All Users</h2>
+
+    {% if users %}
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Username</th>
+                <th>Role</th>
+
+                <th>Actions</th>
+            </tr>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role }}</td>
+
+                <td>
+                    {% if user.id %}
+                        <a href="{% url 'user_detail' user.id %}">Details</a>
+                    {% else %}
+                        <span>No details</span>
+                    {% endif %}
+                    {% if user.email and user.role != 'ADMIN' %}
+                        <a href="{% url 'ban_user' user.email %}" class="delete-link">Ban</a>
+                    {% elif user.role == 'ADMIN' %}
+                        <span style="color: gray;">Admin</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No users found.</p>
+    {% endif %}
+</div>
+
+{% endblock %}
