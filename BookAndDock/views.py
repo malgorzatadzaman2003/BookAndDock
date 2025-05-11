@@ -366,3 +366,63 @@ def delete_dock_space(request, space_id):
     dock_id = space.dock.pk
     space.delete()
     return redirect('dock_detail', dock_id=dock_id)
+
+@login_required
+def manage_guides(request):
+    try:
+        response = requests.get('http://localhost:8080/guides')
+        guides = response.json() if response.status_code == 200 else []
+    except requests.exceptions.RequestException:
+        guides = []
+
+    published_guides = [g for g in guides if g.get('approved')]
+    unpublished_guides = [g for g in guides if not g.get('approved')]
+
+    return render(request, 'profile_guides.html', {
+        'published_guides': published_guides,
+        'unpublished_guides': unpublished_guides,
+    })
+
+@login_required
+def accept_guide(request, guide_id):
+    try:
+        # Get existing guide data
+        response = requests.get(f'http://localhost:8080/guides/{guide_id}')
+        if response.status_code != 200:
+            return HttpResponse("Guide not found", status=response.status_code)
+        guide_data = response.json()
+
+        # Set approved to true
+        guide_data['approved'] = True
+
+        # Send updated data back
+        put_response = requests.put(
+            f'http://localhost:8080/guides/{guide_id}',
+            json=guide_data
+        )
+        if put_response.status_code in [200, 204]:
+            return redirect('manage_guides')
+        return HttpResponse("Failed to approve guide", status=put_response.status_code)
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error: {e}", status=500)
+
+@login_required
+def delete_guide(request, guide_id):
+    try:
+        response = requests.delete(f'http://localhost:8080/guides/{guide_id}')
+        if response.status_code in [200, 204]:
+            return redirect('manage_guides')
+        return HttpResponse("Failed to delete guide", status=response.status_code)
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error: {e}", status=500)
+
+@login_required
+def guide_detail(request, guide_id):
+    try:
+        response = requests.get(f'http://localhost:8080/guides/{guide_id}')
+        if response.status_code != 200:
+            return HttpResponse("Guide not found", status=response.status_code)
+        guide = response.json()
+        return render(request, 'guide_detail_admin.html', {'guide': guide})
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error: {e}", status=500)

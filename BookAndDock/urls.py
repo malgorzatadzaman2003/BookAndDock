@@ -6,7 +6,7 @@ from .forms import CustomLoginForm
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('guide/<int:pk>/', views.guide_detail, name='guide_detail'),
+    path('guide/<int:guide_id>/', views.guide_detail, name='guide_detail'),
     path('add/', views.add_guide, name='add_guide'),
     path('recipe/<int:pk>/comment', views.post_comment, name='post_comment'),
     path('profile_guides/', views.profile_guides, name='profile_guides'),
@@ -33,6 +33,11 @@ urlpatterns = [
     path('dock/<int:dock_id>/', views.dock_detail, name='dock_detail'),
     path('dock/<int:dock_id>/add_space/', views.add_dock_space, name='add_dock_space'),
     path('dock_space/<int:space_id>/delete/', views.delete_dock_space, name='delete_dock_space'),
+    path('guides_manage/', views.manage_guides, name='manage_guides'),
+    path('guide/<int:guide_id>/', views.guide_detail, name='guide_detail'),
+    path('guide/<int:guide_id>/accept/', views.accept_guide, name='accept_guide'),
+    path('guide/<int:guide_id>/delete/', views.delete_guide, name='delete_guide'),
+
 
 # API Endpoint for Guides
     path('api/guides/', views.api_guides, name='api_guides'),

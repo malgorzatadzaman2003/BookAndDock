@@ -19,10 +19,15 @@
                         Profile <span>👤</span>
                     </button>
                     <div class="dropdown-content">
-                        <a href="{% url 'profile_guides' %}">Guides</a>
+
+                        {% if request.session.role == 'EDITOR' %}
+                            <a href="{% url 'profile_guides' %}">Guides</a>
+                        {% endif %}
+
                         {% if request.session.role == 'ADMIN' %}
-                        <a href="{% url 'home' %}"> Users</a>
-                        <a href="{% url 'docks' %}">Docks</a>
+                            <a href="{% url 'users' %}"> Users</a>
+                            <a href="{% url 'docks' %}">Docks</a>
+                            <a href="{% url 'manage_guides' %}">Guides</a>
                         {% endif %}
                         <a href="{% url 'account' %}">Account</a>
                     </div>

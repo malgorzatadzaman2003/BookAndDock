@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="guide-detail">
+    <h2>{{ guide.title }}</h2>
+    <p><strong>Published:</strong> {{ guide.publicationDate|date:"Y-m-d H:i" }}</p>
+    <p>{{ guide.content }}</p>
+</div>
+{% endblock %}

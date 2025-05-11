@@ -4,14 +4,12 @@
 {% block content %}
 
 <div class="profile-container">
-    <h2>My Guides
-        <a href="{% url 'add_guide' %}" class="add-recipe-btn">➕</a>
-    </h2>
+    <h2>My Guides</h2>
 
     <!-- Tab Navigation -->
     <div class="tab-container">
         <button class="tab-button active" data-tab="published">Published Guides</button>
-        <button class="tab-button" data-tab="drafts">Drafts</button>
+        <button class="tab-button" data-tab="drafts">Guides to be Accepted</button>
     </div>
 
     <!-- Published Guides Section -->
@@ -21,10 +19,8 @@
                 {% for guide in published_guides %}
                     <article class="recipe-card">
                         <h2>{{ guide.title }}</h2>
-                        {% if guide.image %}
-                            <img src="{{ guide.image.url }}" alt="{{ guide.title }} image" class="recipe-image">
-                        {% endif %}
-                        <p class="date">Created: {{ guide.created_at }}</p>
+                        <p class="date">Published: {{ guide.publicationDate|date:"Y-m-d H:i" }}</p>
+                        <p>{{ guide.content|truncatewords:30 }}</p>
                         <a href="{% url 'guide_detail' guide.id %}">View Guide</a>
                         <a href="{% url 'accept_guide' guide.id %}" class="edit-link">Accept</a>
                         <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Delete</a>
@@ -36,31 +32,27 @@
         {% endif %}
     </div>
 
-    <!-- Drafts Section -->
+    <!-- Drafts / To Be Accepted Section -->
     <div id="drafts" class="tab-content">
         {% if unpublished_guides %}
             <section class="recipe-grid">
                 {% for guide in unpublished_guides %}
                     <article class="recipe-card">
                         <h2>{{ guide.title }}</h2>
-                        {% if guide.image %}
-                            <img src="{{ guide.image.url }}" alt="{{ guide.title }} image" class="recipe-image">
-                        {% endif %}
-                        <p class="date">Created: {{ guide.created_at }}</p>
+                        <p>{{ guide.content|truncatewords:30 }}</p>
                         <a href="{% url 'guide_detail' guide.id %}">View Guide</a>
                         <a href="{% url 'accept_guide' guide.id %}" class="edit-link">Accept</a>
-                        <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Delete</a>
+                        <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Discard</a>
                     </article>
                 {% endfor %}
             </section>
         {% else %}
-            <p>No unpublished guides yet.</p>
+            <p>No guides waiting for acceptance.</p>
         {% endif %}
     </div>
-
 </div>
 
-    {% block extra_js %}
-        <script src="{% static 'profile.js' %}"></script>
+{% block extra_js %}
+    <script src="{% static 'profile.js' %}"></script>
 {% endblock %}
 {% endblock %}
