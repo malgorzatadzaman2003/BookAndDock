@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="recipe-detail-container">
-    <h2 class="recipe-title">Add Guide</h2>
+    <h2 class="recipe-title">Add Post</h2>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -20,7 +20,7 @@
             </select>
         </div>
 
-        <button type="submit" class="submit-button">Add Guide</button>
+        <button type="submit" class="submit-button">Add</button>
     </form>
 </div>
 {% endblock %}

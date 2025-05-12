@@ -18,7 +18,7 @@
                 <img src="{{ guide.image.url }}" alt="{{ guide.title }} image">
             {% endif %}
             <p class="date">Created on: {{ guide.created_at|date:"Y-m-d" }}</p>
-            <a href="{% url 'guide_detail' guide.pk %}">View Guide</a>
+            <a href="{% url 'guide_detail' guide.pk %}">View</a>
         </article>
     {% empty %}
         <p>There are no posts available yet.</p>

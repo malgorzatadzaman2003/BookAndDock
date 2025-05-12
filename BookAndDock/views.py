@@ -30,7 +30,7 @@ from django.contrib.auth import login as auth_login
 from BookDock import settings
 from .serializers import GuideSerializer
 from .models import Guide, Dock, DockSpace
-from .forms import GuideForm, CommentForm, SearchForm, RegisterForm, EmailOnlyLoginForm
+from .forms import GuideForm, CommentForm, SearchForm, RegisterForm, EmailOnlyLoginForm, ArticleForm, CustomLoginForm
 
 
 def home(request):
@@ -77,6 +77,20 @@ def add_guide(request):
     else:
         form = GuideForm()
     return render(request, 'editor-guide/add_guide.html', {'form': form})
+
+def add_article(request):
+    if request.method == 'POST':
+        form = ArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            guide = form.save(commit=False)
+            guide.created_by = request.user
+            guide.status = request.POST.get('status', 'draft')
+            guide.save()
+            form.save_m2m()
+            return redirect('profile_articles')  # Redirect to the recipes list
+    else:
+        form = ArticleForm()
+    return render(request, 'editor-guide/add_article.html', {'form': form})
 
 @login_required
 def modify_guide(request, pk):
@@ -246,6 +260,23 @@ class LoginAdminView(FormView):
         auth_login(self.request, user)
         return HttpResponseRedirect(self.get_success_url())
 
+class LoginEditorView(FormView):
+    form_class = EmailOnlyLoginForm
+    template_name = "registration/login.html"  # your HTML file
+    success_url = reverse_lazy('home')
+
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+
+            user = User.objects.create_user(username=email, email=email)
+
+        auth_login(self.request, user)
+        return HttpResponseRedirect(self.get_success_url())
 
 @csrf_exempt
 def custom_login(request):
@@ -263,6 +294,46 @@ def custom_login(request):
             if username and email:
                 user, created = User.objects.get_or_create(
                     username=username,
+                    defaults={
+                        'email': email,
+                        'first_name': first_name,
+                        'last_name': last_name
+                    }
+                )
+                login(request, user)
+
+                request.session['role'] = role
+
+                return JsonResponse({"message": "Logged in successfully"})
+
+            return JsonResponse({"error": "Missing username or email"}, status=400)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid method"}, status=400)
+
+@csrf_exempt
+def custom_login_editor(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            username = data.get('username')
+            email = data.get('email')
+            password = data.get('password')
+            first_name = data.get('name', '')
+            last_name = data.get('surname', '')
+            phone = data.get('phoneNumber', '')
+            role = data.get('role')
+
+            user = authenticate(request, username=data.get('username'), email=data.get('email'),
+                                password=data.get('password'))
+
+            if username and email:
+                user, created = User.objects.get_or_create(
+                    username=username,
+                    password=password,
                     defaults={
                         'email': email,
                         'first_name': first_name,
@@ -460,3 +531,25 @@ def user_detail(request, user_id):
         return render(request, 'user_detail.html', {'user': user})
     except requests.exceptions.RequestException as e:
         return HttpResponse(f"Error fetching user: {e}", status=500)
+
+class LoginEditorView1(FormView):
+    form_class = AuthenticationForm  # Using Django's built-in AuthenticationForm
+    template_name = "registration/login.html"  # Use a similar template to admin login
+    success_url = reverse_lazy('home')
+
+    def form_valid(self, form):
+        email = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(email=email)
+            if user.check_password(password):
+                auth_login(self.request, user)
+                return HttpResponseRedirect(self.get_success_url())
+            else:
+                form.add_error(None, "Incorrect password")  # Add error message for incorrect password
+        except User.DoesNotExist:
+            form.add_error(None, "User with this email does not exist.")  # Handle case if user does not exist
+
+        return self.form_invalid(form)

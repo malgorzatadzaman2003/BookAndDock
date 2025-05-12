@@ -8,12 +8,26 @@ from django.contrib.auth.forms import AuthenticationForm
 from .models import Guide, Comment
 
 class GuideForm(forms.ModelForm):
+    tips = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 6}),
+        required=False
+    )
+
     class Meta:
         model = Guide
         fields = ['title', 'image', 'description', 'tips', 'category']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
             'tips': forms.Textarea(attrs={'rows': 6}),
+        }
+        status = forms.ChoiceField(choices=Guide.STATUS_CHOICES, initial='draft')
+
+class ArticleForm(forms.ModelForm):
+    class Meta:
+        model = Guide
+        fields = ['title', 'image', 'description', 'category']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
         }
         status = forms.ChoiceField(choices=Guide.STATUS_CHOICES, initial='draft')
 
@@ -50,7 +64,10 @@ class RegisterForm(UserCreationForm):
         return email
 
 class CustomLoginForm(AuthenticationForm):
-    username = forms.CharField(label="Username", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={"autofocus": True})
+    )
     password = forms.CharField(label="Password", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
 class EmailOnlyLoginForm(forms.Form):

@@ -15,6 +15,7 @@
     <p class="recipe-description">{{ guide.description }}</p>
 
     <!-- Tips -->
+    {% if guide.tips %}
     <section class="recipe-section">
         <h3>Tips:</h3>
         <ul id="instructions-list">
@@ -26,6 +27,7 @@
             {% endfor %}
         </ul>
     </section>
+    {% endif %}
 
     <!-- Comments Section -->
     <div class="comments">
