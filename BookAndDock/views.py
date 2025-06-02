@@ -176,12 +176,19 @@ def post_comment(request, pk):
 
 @login_required
 def profile_guides(request):
-    published_guides = Guide.objects.filter(created_by=request.user, status='published', category='guide')
-    unpublished_guides = Guide.objects.filter(created_by=request.user, status='draft', category='guide')
+    user_id = request.user.id
+    # Example of fetching from external backend API
+    response = requests.get(f'http://localhost:8080/guides/author/{user_id}')
+    guides = response.json()
+
+    published_guides = [g for g in guides if g['guideStatus'] == 'PUBLISHED']
+    unpublished_guides = [g for g in guides if g['guideStatus'] == 'DRAFT']
+
     return render(request, 'profile_guides.html', {
         'published_guides': published_guides,
         'unpublished_guides': unpublished_guides
     })
+
 
 @login_required
 def profile_articles(request):
