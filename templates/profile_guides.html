@@ -26,8 +26,8 @@
                         {% endif %}
                         <p class="date">Created: {{ guide.created_at }}</p>
                         <a href="{% url 'guide_detail' guide.id %}">View Guide</a>
-                        <a href="{% url 'accept_guide' guide.id %}" class="edit-link">Accept</a>
-                        <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Delete</a>
+                        <a href="{% url 'modify_guide' guide.id %}" class="edit-link">Modify Guide</a>
+                        <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Delete Guide</a>
                     </article>
                 {% endfor %}
             </section>

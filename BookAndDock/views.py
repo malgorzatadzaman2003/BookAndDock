@@ -532,24 +532,3 @@ def user_detail(request, user_id):
     except requests.exceptions.RequestException as e:
         return HttpResponse(f"Error fetching user: {e}", status=500)
 
-class LoginEditorView1(FormView):
-    form_class = AuthenticationForm  # Using Django's built-in AuthenticationForm
-    template_name = "registration/login.html"  # Use a similar template to admin login
-    success_url = reverse_lazy('home')
-
-    def form_valid(self, form):
-        email = form.cleaned_data['username']
-        password = form.cleaned_data['password']
-        User = get_user_model()
-
-        try:
-            user = User.objects.get(email=email)
-            if user.check_password(password):
-                auth_login(self.request, user)
-                return HttpResponseRedirect(self.get_success_url())
-            else:
-                form.add_error(None, "Incorrect password")  # Add error message for incorrect password
-        except User.DoesNotExist:
-            form.add_error(None, "User with this email does not exist.")  # Handle case if user does not exist
-
-        return self.form_invalid(form)
