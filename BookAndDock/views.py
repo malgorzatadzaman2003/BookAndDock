@@ -24,7 +24,7 @@ from django.views.generic import FormView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.contrib.auth import login as auth_login
-
+from datetime import datetime
 
 
 from BookDock import settings
@@ -64,18 +64,47 @@ def guide_detail(request, pk):
         'comments': comments,
         'form': form})
 
+@login_required
 def add_guide(request):
     if request.method == 'POST':
         form = GuideForm(request.POST, request.FILES)
         if form.is_valid():
             guide = form.save(commit=False)
             guide.created_by = request.user
-            guide.status = request.POST.get('status', 'draft')
+            guide.status = request.POST.get('status', 'DRAFT').upper()  # e.g., DRAFT, BACKLOG, PUBLISHED
             guide.save()
             form.save_m2m()
-            return redirect('profile_guides')  # Redirect to the recipes list
+
+            publication_date = datetime.now().replace(microsecond=0).isoformat()
+
+            # Prepare JSON for external API
+            api_payload = {
+                "title": guide.title,
+                "content": guide.description,
+                "authorId": request.user.id,  # assuming it matches external authorId
+                "publicationDate": publication_date,  # adjust if field differs
+                "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
+                "links": [],   # Add logic if you have links field
+                "guideStatus": guide.status.upper(),
+                "guideCategory": guide.category.upper()
+            }
+
+            print(json.dumps(api_payload, indent=2))
+
+            try:
+                response = requests.post("http://localhost:8080/guides", json=api_payload)
+                print(response.text)
+                if response.status_code in [200, 201]:
+                    print("Guide synced to API successfully.")
+                else:
+                    print(f"API sync failed. Status: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                print(f"Error syncing guide to API: {e}")
+
+            return redirect('profile_guides')
     else:
         form = GuideForm()
+
     return render(request, 'editor-guide/add_guide.html', {'form': form})
 
 def add_article(request):

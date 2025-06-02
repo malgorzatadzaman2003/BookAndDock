@@ -19,7 +19,7 @@ class Guide(models.Model):
     description = models.TextField()
     tips = models.TextField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(default=timezone.now, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default='guide')
 
