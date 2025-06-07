@@ -101,7 +101,7 @@ def guide_detail_editor(request, guide_id):
                 guide['publicationDate'] = None
         return render(request, 'editor-guide/guide_detail.html', {
             'guide': guide,
-            'tips': guide.get('tips', []),
+            'links': guide.get('links', []),
             'comments': guide.get('comments', []),
             'form': CommentForm(),
         })
@@ -118,10 +118,7 @@ def add_guide(request):
             guide = form.save(commit=False)
             guide.created_by = request.user
             guide.status = request.POST.get('status', 'DRAFT').upper()  # e.g., DRAFT, BACKLOG, PUBLISHED
-            # Parse links from textarea (split by comma or newline)
-            raw_links = form.cleaned_data.get('links', '')
-            link_list = [link.strip() for link in raw_links.replace(',', '\n').split('\n') if link.strip()]
-            guide.links = link_list
+            guide.links = form.cleaned_data.get('links', [])
 
             guide.save()
             form.save_m2m()
@@ -196,9 +193,14 @@ def modify_guide(request, pk):
     if request.method == 'POST':
         form = GuideForm(request.POST, request.FILES, instance=guide)
         if form.is_valid():
-            form.save()
+            guide = form.save(commit=False)
+
+            links_list = form.cleaned_data.get('links', [])
+            guide.links = links_list
 
             publication_date = datetime.now().replace(microsecond=0).isoformat()
+
+            guide.save()
 
             api_payload = {
                 "title": guide.title,
@@ -206,7 +208,7 @@ def modify_guide(request, pk):
                 "authorId": request.user.id,  # assuming it matches external authorId
                 "publicationDate": publication_date,  # adjust if field differs
                 "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
-                "links": [],  # Add logic if you have links field
+                "links": links_list,  # Add logic if you have links field
                 "guideStatus": guide.status.upper(),
                 "guideCategory": guide.category.upper()
             }
@@ -223,10 +225,30 @@ def modify_guide(request, pk):
             except requests.RequestException as e:
                 print(f"Failed to sync guide to API: {e}")
 
-            return redirect('profile_guides')
+            if guide.category.upper() == 'ARTICLE':
+                return redirect('profile_articles')
+            else:
+                return redirect('profile_guides')
+
 
     else:
-        form = GuideForm(instance=guide)
+        initial_links = guide.links
+        if isinstance(initial_links, str):
+
+            try:
+                # Try to parse stringified list
+                initial_links = json.loads(initial_links)
+            except json.JSONDecodeError:
+                try:
+                    import ast
+                    initial_links = ast.literal_eval(initial_links)
+                except Exception:
+                    initial_links = [initial_links]  # fallback
+
+        if not isinstance(initial_links, list):
+            initial_links = [str(initial_links)]
+
+        form = GuideForm(instance=guide, initial={'links': "\n".join(initial_links)})
 
     return render(request, 'editor-guide/modify_guide.html', {'form': form, 'guide': guide})
 

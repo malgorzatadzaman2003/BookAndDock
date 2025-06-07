@@ -16,12 +16,18 @@ class GuideForm(forms.ModelForm):
 
     class Meta:
         model = Guide
-        fields = ['title', 'image', 'description', 'links', 'category']
+        fields = ['title', 'image', 'description', 'links', 'category', 'status']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
             'links': forms.Textarea(attrs={'rows': 6}),
+            'status': forms.Select(),
         }
-        status = forms.ChoiceField(choices=Guide.STATUS_CHOICES, initial='draft')
+
+    def clean_links(self):
+        data = self.cleaned_data.get('links', '')
+        # Split on commas or newlines, strip spaces, filter out empties
+        links_list = [link.strip() for link in data.replace(',', '\n').split('\n') if link.strip()]
+        return links_list
 
 class ArticleForm(forms.ModelForm):
     class Meta:
