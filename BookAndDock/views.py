@@ -130,32 +130,25 @@ def modify_guide(request, pk):
         if form.is_valid():
             form.save()
 
-            # Get updated data from form
-            title = form.cleaned_data['title']
-            content = form.cleaned_data['content']
-            guide_status = request.POST.get('status', 'DRAFT')
-            guide_category = form.cleaned_data.get('category', 'GUIDE')  # Default category
-            author_id = guide.created_by.id
-            images = [request.build_absolute_uri(g.image.url) for g in [guide] if guide.image]
-            links = []  # Update if your form supports links
+            publication_date = datetime.now().replace(microsecond=0).isoformat()
 
-            # Prepare data payload
-            data = {
-                "id": guide.id,
-                "title": title,
-                "content": content,
-                "authorId": author_id,
-                "publicationDate": guide.created_at.isoformat() if guide.created_at else None,
-                "images": images,
-                "links": links,
-                "guideStatus": guide_status,
-                "guideCategory": guide_category,
+            api_payload = {
+                "title": guide.title,
+                "content": guide.description,
+                "authorId": request.user.id,  # assuming it matches external authorId
+                "publicationDate": publication_date,  # adjust if field differs
+                "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
+                "links": [],  # Add logic if you have links field
+                "guideStatus": guide.status.upper(),
+                "guideCategory": guide.category.upper()
             }
+
+            print(json.dumps(api_payload, indent=2))
 
             try:
                 response = requests.put(
                     f"http://localhost:8080/guides/{guide.id}",
-                    json=data
+                    json=api_payload
                 )
                 response.raise_for_status()
                 print(f"Guide {guide.id} synced to API.")
