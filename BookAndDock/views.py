@@ -113,25 +113,42 @@ def add_guide(request):
             except requests.exceptions.RequestException as e:
                 print(f"Error syncing guide to API: {e}")
 
-            return redirect('profile_guides')
+            if guide.category.upper() == 'ARTICLE':
+                return redirect('profile_articles')
+            else:
+                return redirect('profile_guides')
     else:
         form = GuideForm()
 
     return render(request, 'editor-guide/add_guide.html', {'form': form})
 
-def add_article(request):
-    if request.method == 'POST':
-        form = ArticleForm(request.POST, request.FILES)
-        if form.is_valid():
-            guide = form.save(commit=False)
-            guide.created_by = request.user
-            guide.status = request.POST.get('status', 'draft')
-            guide.save()
-            form.save_m2m()
-            return redirect('profile_articles')  # Redirect to the recipes list
-    else:
-        form = ArticleForm()
-    return render(request, 'editor-guide/add_article.html', {'form': form})
+@login_required
+def delete_guide_editor(request, guide_id):
+    try:
+        # Fetch guide details first to get the category
+        get_response = requests.get(f'http://localhost:8080/guides/{guide_id}')
+        if get_response.status_code != 200:
+            return HttpResponse(f"Failed to fetch guide. Status: {get_response.status_code}",
+                                status=get_response.status_code)
+
+        guide_data = get_response.json()
+        category = guide_data.get('guideCategory', '').upper()  # Normalize to uppercase for safety
+
+        # Delete the guide
+        del_response = requests.delete(f'http://localhost:8080/guides/{guide_id}')
+        if del_response.status_code in [200, 204]:
+            if category == 'GUIDE':
+                return redirect('profile_guides')
+            elif category == 'ARTICLE':
+                return redirect('profile_articles')
+            else:
+                # Default fallback if category is unknown
+                return redirect('profile_guides')
+
+        return HttpResponse("Failed to delete guide", status=del_response.status_code)
+
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error: {e}", status=500)
 
 @login_required
 def modify_guide(request, pk):
@@ -173,19 +190,6 @@ def modify_guide(request, pk):
         form = GuideForm(instance=guide)
 
     return render(request, 'editor-guide/modify_guide.html', {'form': form, 'guide': guide})
-
-@login_required
-def delete_guide(request, pk):
-    guide = get_object_or_404(Guide, pk=pk)
-    # Ensure only the creator can delete the recipe
-    if guide.created_by != request.user:
-        return HttpResponseForbidden("You are not allowed to delete this guide.")
-
-    if request.method == 'POST':
-        guide.delete()
-        return redirect('profile_guides')  # Redirect to the profile page after deletion
-
-    return render(request, 'editor-guide/delete_guide.html', {'guide': guide})
 
 from django.shortcuts import redirect
 
@@ -229,8 +233,8 @@ def profile_guides(request):
                     guide['publicationDate'] = None
         return guides_list
 
-    published_guides = [g for g in guides if g['guideStatus'] == 'PUBLISHED']
-    unpublished_guides = [g for g in guides if g['guideStatus'] == 'DRAFT']
+    published_guides = [g for g in guides if g['guideStatus'] == 'PUBLISHED' and g.get('guideCategory') == 'GUIDE']
+    unpublished_guides = [g for g in guides if g['guideStatus'] == 'DRAFT' and g.get('guideCategory') == 'GUIDE']
 
     published_guides = convert_dates(published_guides)
     unpublished_guides = convert_dates(unpublished_guides)
@@ -241,14 +245,33 @@ def profile_guides(request):
     })
 
 
+
 @login_required
 def profile_articles(request):
-    published_articles = Guide.objects.filter(created_by=request.user, status='published', category='article')
-    unpublished_articles = Guide.objects.filter(created_by=request.user, status='draft', category='article')
+    user_id = request.user.id
+    response = requests.get(f'http://localhost:8080/guides/author/{user_id}')
+    articles = response.json()
+
+    def convert_dates(guides_list):
+        for guide in guides_list:
+            pub_date_str = guide.get('publicationDate')
+            if pub_date_str:
+                try:
+                    guide['publicationDate'] = datetime.fromisoformat(pub_date_str)
+                except ValueError:
+                    guide['publicationDate'] = None
+        return guides_list
+
+    published_articles = [a for a in articles if a['guideStatus'] == 'PUBLISHED' and a['guideCategory'] == 'ARTICLE']
+    unpublished_articles = [a for a in articles if a['guideStatus'] == 'DRAFT' and a['guideCategory'] == 'ARTICLE']
+
+    published_articles = convert_dates(published_articles)
+    unpublished_articles = convert_dates(unpublished_articles)
+
     return render(request, 'profile_articles.html', {
-        'published_articles': published_articles,
-        'unpublished_articles': unpublished_articles
-    })
+            'published_articles': published_articles,
+            'unpublished_articles': unpublished_articles,
+        })
 
 @login_required
 def docks(request):

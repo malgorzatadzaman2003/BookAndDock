@@ -29,7 +29,7 @@
                          {% endif %}
                         <a href="{% url 'guide_detail_editor' guide.id %}">View Guide</a>
                         <a href="{% url 'modify_guide' guide.id %}" class="edit-link">Modify Guide</a>
-                        <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Delete Guide</a>
+                        <a href="{% url 'delete_guide_editor' guide.id %}" class="delete-link">Delete Guide</a>
                     </article>
                 {% endfor %}
             </section>
@@ -55,7 +55,7 @@
 
                         <a href="{% url 'guide_detail_editor' guide.id %}">View Guide</a>
                         <a href="{% url 'modify_guide' guide.id %}" class="edit-link">Modify Guide</a>
-                        <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Delete Guide</a>
+                        <a href="{% url 'delete_guide_editor' guide.id %}" class="delete-link">Delete Guide</a>
                     </article>
                 {% endfor %}
             </section>

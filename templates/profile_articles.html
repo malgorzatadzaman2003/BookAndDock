@@ -21,13 +21,15 @@
             {% for article in published_articles %}
                 <article class="recipe-card">
                     <h2>{{ article.title }}</h2>
-                    {% if article.image %}
-                        <img src="{{ article.image.url }}" alt="{{ article.title }} image" class="recipe-image">
+                    {% if article.images and article.images.0 %}
+                            <img src="{{ article.images.0 }}" alt="{{ article.title }} image" class="recipe-image">
                     {% endif %}
-                    <p class="date">Created: {{ article.created_at }}</p>
-                    <a href="{% url 'guide_detail_editor' article.pk %}">View Article</a>
-                    <a href="{% url 'modify_guide' article.pk %}" class="edit-link">Modify</a>
-                    <a href="{% url 'delete_guide' article.pk %}" class="delete-link">Delete</a>
+                    {% if article.publicationDate %}
+                        <p class="date">Published: {{ article.publicationDate|date:"Y-m-d H:i" }}</p>
+                    {% endif %}
+                    <a href="{% url 'guide_detail_editor' article.id %}">View Article</a>
+                    <a href="{% url 'modify_guide' article.id %}" class="edit-link">Modify</a>
+                    <a href="{% url 'delete_guide_editor' article.id %}" class="delete-link">Delete</a>
                 </article>
             {% endfor %}
         </section>
@@ -42,13 +44,15 @@
                 {% for article in unpublished_articles %}
                     <article class="recipe-card">
                         <h2>{{ article.title }}</h2>
-                        {% if article.image %}
-                            <img src="{{ article.image.url }}" alt="{{ article.title }} image" class="recipe-image">
+                        {% if article.images and article.images.0 %}
+                            <img src="{{ article.images.0 }}" alt="{{ article.title }} image" class="recipe-image">
                         {% endif %}
-                        <p class="date">Created: {{ article.created_at }}</p>
-                        <a href="{% url 'guide_detail' article.pk %}">View Article</a>
-                        <a href="{% url 'modify_guide' article.pk %}" class="edit-link">Modify</a>
-                        <a href="{% url 'delete_guide' article.pk %}" class="delete-link">Delete</a>
+                         {% if article.publicationDate %}
+                            <p class="date">Published: {{ article.publicationDate|date:"Y-m-d H:i" }}</p>
+                         {% endif %}
+                        <a href="{% url 'guide_detail_editor' article.id %}">View Article</a>
+                        <a href="{% url 'modify_guide' article.id %}" class="edit-link">Modify</a>
+                        <a href="{% url 'delete_guide_editor' article.id %}" class="delete-link">Delete</a>
                     </article>
                 {% endfor %}
             </section>
