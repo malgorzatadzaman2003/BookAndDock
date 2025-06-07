@@ -51,18 +51,30 @@ def about_view(request):
 def account_view(request):
     return render(request, 'account.html')
 
-def guide_detail(request, pk):
-    guide = get_object_or_404(Guide, pk=pk)
+def guide_detail_editor(request, guide_id):
 
-    tips = guide.tips.split('\n') if guide.tips else []
+    try:
+        response = requests.get(f'http://localhost:8080/guides/{guide_id}')
+        if response.status_code != 200:
+            return HttpResponse("Guide not found", status=response.status_code)
+        guide = response.json()
+        pub_date_str = guide.get('publicationDate')
+        if pub_date_str:
+            try:
+                guide['publicationDate'] = datetime.fromisoformat(pub_date_str)
+            except ValueError:
+                # If parsing fails, keep original string or set None
+                guide['publicationDate'] = None
+        return render(request, 'editor-guide/guide_detail.html', {
+            'guide': guide,
+            'tips': guide.get('tips', []),
+            'comments': guide.get('comments', []),
+            'form': CommentForm(),
+        })
 
-    comments = guide.comment_set.order_by('-created_at')  # Fetch comments for the recipe
-    form = CommentForm()  # Empty form for new comment submission
-    return render(request, 'editor-guide/guide_detail.html', {
-        'guide': guide,
-        'tips': tips,
-        'comments': comments,
-        'form': form})
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error: {e}", status=500)
+
 
 @login_required
 def add_guide(request):
@@ -207,8 +219,21 @@ def profile_guides(request):
     response = requests.get(f'http://localhost:8080/guides/author/{user_id}')
     guides = response.json()
 
+    def convert_dates(guides_list):
+        for guide in guides_list:
+            pub_date_str = guide.get('publicationDate')
+            if pub_date_str:
+                try:
+                    guide['publicationDate'] = datetime.fromisoformat(pub_date_str)
+                except ValueError:
+                    guide['publicationDate'] = None
+        return guides_list
+
     published_guides = [g for g in guides if g['guideStatus'] == 'PUBLISHED']
     unpublished_guides = [g for g in guides if g['guideStatus'] == 'DRAFT']
+
+    published_guides = convert_dates(published_guides)
+    unpublished_guides = convert_dates(unpublished_guides)
 
     return render(request, 'profile_guides.html', {
         'published_guides': published_guides,

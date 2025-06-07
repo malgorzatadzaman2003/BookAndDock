@@ -25,7 +25,7 @@
                         <img src="{{ article.image.url }}" alt="{{ article.title }} image" class="recipe-image">
                     {% endif %}
                     <p class="date">Created: {{ article.created_at }}</p>
-                    <a href="{% url 'guide_detail' article.pk %}">View Article</a>
+                    <a href="{% url 'guide_detail_editor' article.pk %}">View Article</a>
                     <a href="{% url 'modify_guide' article.pk %}" class="edit-link">Modify</a>
                     <a href="{% url 'delete_guide' article.pk %}" class="delete-link">Delete</a>
                 </article>

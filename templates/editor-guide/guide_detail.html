@@ -3,26 +3,24 @@
 
 {% block content %}
 <div class="recipe-detail-container">
-    <!-- Guide Title and Description -->
+    <!-- Guide Title and Content -->
     <h1 class="recipe-title">{{ guide.title }}</h1>
+    <p class="recipe-description">{{ guide.content }}</p>
 
-    <!-- Guide Image -->
-    {% if guide.image %}
-        <img src="{{ guide.image.url }}" alt="{{ guide.title }} image" class="recipe-image">
+    <!-- Guide Image (from images array) -->
+    {% if guide.images and guide.images.0 %}
+        <img src="{{ guide.images.0 }}" alt="{{ guide.title }} image" class="recipe-image">
     {% endif %}
 
-    <!-- Guide Description -->
-    <p class="recipe-description">{{ guide.description }}</p>
-
-    <!-- Tips -->
-    {% if guide.tips %}
+    <!-- Tips (optional, if provided separately) -->
+    {% if tips %}
     <section class="recipe-section">
         <h3>Tips:</h3>
         <ul id="instructions-list">
             {% for tip in tips %}
                 <li>
-                    <input type="checkbox" id="ingredient-{{ forloop.counter }}" class="instruction-checkbox">
-                    <label for="ingredient-{{ forloop.counter }}">{{ tip }}</label>
+                    <input type="checkbox" id="tip-{{ forloop.counter }}" class="instruction-checkbox">
+                    <label for="tip-{{ forloop.counter }}">{{ tip }}</label>
                 </li>
             {% endfor %}
         </ul>
@@ -34,19 +32,19 @@
         <h3>Comments:</h3>
         <ul class="comment-list">
             {% for comment in comments %}
-		{% if not comment.parent %} 
+                {% if not comment.parent %}
                 <li class="comment-item">
                     <p class="author"><strong>{{ comment.author }}</strong></p>
-                    <p class="date">{{ comment.created_at|date:"Y-m-d H:i" }}</p>
+                    <p class="date">{{ comment.created_at }}</p>
                     <p class="comment">{{ comment.content }}</p>
 
-                    <!-- Replies to the comment -->
-                    {% if comment.replies.all %}
+                    <!-- Replies -->
+                    {% if comment.replies %}
                         <ul class="reply-list">
-                            {% for reply in comment.replies.all %}
+                            {% for reply in comment.replies %}
                                 <li class="reply-item">
                                     <p class="author"><strong>{{ reply.author }}</strong></p>
-                                    <p class="date">{{ reply.created_at|date:"Y-m-d H:i" }}</p>
+                                    <p class="date">{{ reply.created_at }}</p>
                                     <p class="comment">{{ reply.content }}</p>
                                 </li>
                             {% endfor %}
@@ -54,33 +52,32 @@
                     {% endif %}
 
                     {% if user.is_authenticated %}
-                        <!-- Reply Button -->
-                        <form method="post" action="{% url 'post_comment' guide.pk %}" class="reply-form" id="reply-form-{{ comment.id }}">
-                            {% csrf_token %}
-                            {{ form.as_p }}
-                            <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                            <button type="submit" class="submit-button">Post Reply ✉️</button>
-                        </form>
+                    <!-- Reply Form -->
+                    <form method="post" action="{% url 'post_comment' guide.id %}" class="reply-form" id="reply-form-{{ comment.id }}">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                        <button type="submit" class="submit-button">Post Reply ✉️</button>
+                    </form>
                     {% endif %}
                 </li>
-		{% endif %}
+                {% endif %}
             {% empty %}
                 <p>No comments yet. Be the first to comment!</p>
             {% endfor %}
         </ul>
 
         {% if user.is_authenticated %}
-            <!-- Add Comment Form -->
-            <h3>Add a Comment:</h3>
-            <form method="post" action="{% url 'post_comment' guide.pk %}" class="comment-form">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="submit-button">Post ✉️</button>
-            </form>
+        <!-- New Comment Form -->
+        <h3>Add a Comment:</h3>
+        <form method="post" action="{% url 'post_comment' guide.id %}" class="comment-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="submit-button">Post ✉️</button>
+        </form>
         {% endif %}
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}

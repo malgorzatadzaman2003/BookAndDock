@@ -21,11 +21,13 @@
                 {% for guide in published_guides %}
                     <article class="recipe-card">
                         <h2>{{ guide.title }}</h2>
-                        {% if guide.image %}
-                            <img src="{{ guide.image.url }}" alt="{{ guide.title }} image" class="recipe-image">
+                        {% if guide.images and guide.images.0 %}
+                            <img src="{{ guide.images.0 }}" alt="{{ guide.title }} image" class="recipe-image">
                         {% endif %}
-                        <p class="date">Created: {{ guide.created_at }}</p>
-                        <a href="{% url 'guide_detail' guide.id %}">View Guide</a>
+                         {% if guide.publicationDate %}
+                            <p class="date">Published: {{ guide.publicationDate|date:"Y-m-d H:i" }}</p>
+                         {% endif %}
+                        <a href="{% url 'guide_detail_editor' guide.id %}">View Guide</a>
                         <a href="{% url 'modify_guide' guide.id %}" class="edit-link">Modify Guide</a>
                         <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Delete Guide</a>
                     </article>
@@ -43,11 +45,15 @@
                 {% for guide in unpublished_guides %}
                     <article class="recipe-card">
                         <h2>{{ guide.title }}</h2>
-                        {% if guide.image %}
-                            <img src="{{ guide.image.url }}" alt="{{ guide.title }} image" class="recipe-image">
+                        {% if guide.images and guide.images.0 %}
+                            <img src="{{ guide.images.0 }}" alt="{{ guide.title }} image" class="recipe-image">
                         {% endif %}
-                        <p class="date">Created: {{ guide.created_at }}</p>
-                        <a href="{% url 'guide_detail' guide.id %}">View Guide</a>
+
+                        {% if guide.publicationDate %}
+                            <p class="date">Last saved: {{ guide.publicationDate|date:"Y-m-d H:i" }}</p>
+                        {% endif %}
+
+                        <a href="{% url 'guide_detail_editor' guide.id %}">View Guide</a>
                         <a href="{% url 'modify_guide' guide.id %}" class="edit-link">Modify Guide</a>
                         <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Delete Guide</a>
                     </article>

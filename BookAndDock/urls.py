@@ -7,6 +7,7 @@ from .forms import CustomLoginForm
 urlpatterns = [
     path('', views.home, name='home'),
     path('guide/<int:guide_id>/', views.guide_detail, name='guide_detail'),
+    path('editor/guide/<int:guide_id>/', views.guide_detail_editor, name='guide_detail_editor'),
     path('add/', views.add_guide, name='add_guide'),
     path('add/', views.add_article, name='add_article'),
     path('recipe/<int:pk>/comment', views.post_comment, name='post_comment'),
