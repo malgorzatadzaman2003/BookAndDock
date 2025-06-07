@@ -118,6 +118,11 @@ def add_guide(request):
             guide = form.save(commit=False)
             guide.created_by = request.user
             guide.status = request.POST.get('status', 'DRAFT').upper()  # e.g., DRAFT, BACKLOG, PUBLISHED
+            # Parse links from textarea (split by comma or newline)
+            raw_links = form.cleaned_data.get('links', '')
+            link_list = [link.strip() for link in raw_links.replace(',', '\n').split('\n') if link.strip()]
+            guide.links = link_list
+
             guide.save()
             form.save_m2m()
 
@@ -130,7 +135,7 @@ def add_guide(request):
                 "authorId": request.user.id,  # assuming it matches external authorId
                 "publicationDate": publication_date,  # adjust if field differs
                 "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
-                "links": [],   # Add logic if you have links field
+                "links": guide.links,   # Add logic if you have links field
                 "guideStatus": guide.status.upper(),
                 "guideCategory": guide.category.upper()
             }

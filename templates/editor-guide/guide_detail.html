@@ -5,22 +5,22 @@
 <div class="recipe-detail-container">
     <!-- Guide Title and Content -->
     <h1 class="recipe-title">{{ guide.title }}</h1>
-    <p class="recipe-description">{{ guide.content }}</p>
 
     <!-- Guide Image (from images array) -->
     {% if guide.images and guide.images.0 %}
         <img src="{{ guide.images.0 }}" alt="{{ guide.title }} image" class="recipe-image">
     {% endif %}
 
-    <!-- Tips (optional, if provided separately) -->
-    {% if tips %}
+    <p class="recipe-description">{{ guide.content }}</p>
+
+    <!-- Links Section (formerly Tips) -->
+    {% if guide.links %}
     <section class="recipe-section">
-        <h3>Tips:</h3>
-        <ul id="instructions-list">
-            {% for tip in tips %}
+        <h3>Related Links:</h3>
+        <ul id="links-list">
+            {% for link in guide.links %}
                 <li>
-                    <input type="checkbox" id="tip-{{ forloop.counter }}" class="instruction-checkbox">
-                    <label for="tip-{{ forloop.counter }}">{{ tip }}</label>
+                    <a href="{{ link }}" target="_blank" rel="noopener noreferrer">{{ link }}</a>
                 </li>
             {% endfor %}
         </ul>

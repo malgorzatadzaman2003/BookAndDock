@@ -8,17 +8,18 @@ from django.contrib.auth.forms import AuthenticationForm
 from .models import Guide, Comment
 
 class GuideForm(forms.ModelForm):
-    tips = forms.CharField(
+    links = forms.CharField(
+        required=False,
         widget=forms.Textarea(attrs={'rows': 6}),
-        required=False
+        help_text="Enter one or more URLs, separated by commas or newlines."
     )
 
     class Meta:
         model = Guide
-        fields = ['title', 'image', 'description', 'tips', 'category']
+        fields = ['title', 'image', 'description', 'links', 'category']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
-            'tips': forms.Textarea(attrs={'rows': 6}),
+            'links': forms.Textarea(attrs={'rows': 6}),
         }
         status = forms.ChoiceField(choices=Guide.STATUS_CHOICES, initial='draft')
 
