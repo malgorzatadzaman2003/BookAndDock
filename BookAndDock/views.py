@@ -34,15 +34,49 @@ from .forms import GuideForm, CommentForm, SearchForm, RegisterForm, EmailOnlyLo
 
 
 def home(request):
-    guides = Guide.objects.filter(status='published')
+    # Fetch all guides and articles (combined) from external API
+    response = requests.get('http://localhost:8080/guides')
+    if response.status_code != 200:
+        return render(request, 'home.html', {
+            'published_items': [],
+            'form': SearchForm(),
+            'error': 'Failed to fetch data from external API.'
+        })
+
+    items = response.json()
+
+    # Filter only published guides and articles
+    published_items = [
+        item for item in items
+        if item.get('guideStatus') == 'PUBLISHED' and item.get('guideCategory') in ['GUIDE', 'ARTICLE']
+    ]
+
+    # Convert publicationDate strings to datetime objects
+    def convert_dates(data):
+        for item in data:
+            pub_date = item.get('publicationDate')
+            if pub_date:
+                try:
+                    item['publicationDate'] = datetime.fromisoformat(pub_date)
+                except ValueError:
+                    item['publicationDate'] = None
+        return data
+
+    published_items = convert_dates(published_items)
+
+    # Optional search
     form = SearchForm(request.GET)
-
     if form.is_valid() and form.cleaned_data['query']:
-        query = form.cleaned_data['query']
-        if query:
-            guides = guides.filter(title__icontains=query)
+        query = form.cleaned_data['query'].lower()
+        published_items = [
+            item for item in published_items
+            if query in item['title'].lower()
+        ]
 
-    return render(request, 'home.html', {'guides': guides, 'form': form})
+    return render(request, 'home.html', {
+        'published_items': published_items,
+        'form': form
+    })
 
 def about_view(request):
     return render(request, 'about.html')

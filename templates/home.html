@@ -1,27 +1,37 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Guides
+    Latest Guides & Articles
 {% endblock %}
 
 {% block content %}
-<h1>Latest Guides/Articles</h1>
-    
-    <form class="search">
-        {{ form }}
-    </form>
+<h1>Latest Published Guides and Articles</h1>
+
+<form class="search">
+    {{ form }}
+</form>
+
 <section class="recipe-grid">
-    {% for guide in guides %}
+    {% for item in published_items %}
         <article class="recipe-card">
-            <h3>{{ guide.title }} <small>({{ guide.get_category_display }})</small></h3>
-            {% if guide.image %}
-                <img src="{{ guide.image.url }}" alt="{{ guide.title }} image">
+            <h3>{{ item.title }} <small>({{ item.guideCategory|title }})</small></h3>
+
+            {% if item.images and item.images.0 %}
+                <img src="{{ item.images.0 }}" alt="{{ item.title }} image">
+            {% elif item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.title }} image">
             {% endif %}
-            <p class="date">Created on: {{ guide.created_at|date:"Y-m-d" }}</p>
-            <a href="{% url 'guide_detail' guide.pk %}">View</a>
+
+            {% if item.publicationDate %}
+                <p class="date">Published on: {{ item.publicationDate|date:"Y-m-d" }}</p>
+            {% elif item.created_at %}
+                <p class="date">Created on: {{ item.created_at|date:"Y-m-d" }}</p>
+            {% endif %}
+
+            <a href="{% url 'guide_detail_editor' item.id %}">View</a>
         </article>
     {% empty %}
-        <p>There are no posts available yet.</p>
+        <p>There are no published guides or articles yet.</p>
     {% endfor %}
 </section>
 
