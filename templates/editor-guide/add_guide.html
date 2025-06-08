@@ -11,15 +11,6 @@
             {{ form.as_p }}
         </div>
 
-        <!-- Option to publish or save as draft -->
-        <div class="form-group">
-            <label for="status">Status:</label>
-            <select name="status" id="status" class="form-control">
-                <option value="draft" {% if form.instance.status == 'draft' %}selected{% endif %}>Save as Draft</option>
-                <option value="published" {% if form.instance.status == 'published' %}selected{% endif %}>Publish</option>
-            </select>
-        </div>
-
         <button type="submit" class="submit-button">Add</button>
     </form>
 </div>
