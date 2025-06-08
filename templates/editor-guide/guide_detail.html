@@ -27,56 +27,56 @@
     </section>
     {% endif %}
 
-    <!-- Comments Section -->
-    <div class="comments">
-        <h3>Comments:</h3>
-        <ul class="comment-list">
-            {% for comment in comments %}
-                {% if not comment.parent %}
-                <li class="comment-item">
-                    <p class="author"><strong>{{ comment.author }}</strong></p>
-                    <p class="date">{{ comment.created_at }}</p>
-                    <p class="comment">{{ comment.content }}</p>
-
-                    <!-- Replies -->
-                    {% if comment.replies %}
-                        <ul class="reply-list">
-                            {% for reply in comment.replies %}
-                                <li class="reply-item">
-                                    <p class="author"><strong>{{ reply.author }}</strong></p>
-                                    <p class="date">{{ reply.created_at }}</p>
-                                    <p class="comment">{{ reply.content }}</p>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-
-                    {% if user.is_authenticated %}
-                    <!-- Reply Form -->
-                    <form method="post" action="{% url 'post_comment' guide.id %}" class="reply-form" id="reply-form-{{ comment.id }}">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                        <button type="submit" class="submit-button">Post Reply ✉️</button>
-                    </form>
-                    {% endif %}
-                </li>
-                {% endif %}
-            {% empty %}
-                <p>No comments yet. Be the first to comment!</p>
-            {% endfor %}
-        </ul>
-
-        {% if user.is_authenticated %}
-        <!-- New Comment Form -->
-        <h3>Add a Comment:</h3>
-        <form method="post" action="{% url 'post_comment' guide.id %}" class="comment-form">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="submit-button">Post ✉️</button>
-        </form>
-        {% endif %}
-    </div>
+{#    <!-- Comments Section -->#}
+{#    <div class="comments">#}
+{#        <h3>Comments:</h3>#}
+{#        <ul class="comment-list">#}
+{#            {% for comment in comments %}#}
+{#                {% if not comment.parent %}#}
+{#                <li class="comment-item">#}
+{#                    <p class="author"><strong>{{ comment.author }}</strong></p>#}
+{#                    <p class="date">{{ comment.created_at }}</p>#}
+{#                    <p class="comment">{{ comment.content }}</p>#}
+{##}
+{#                    <!-- Replies -->#}
+{#                    {% if comment.replies %}#}
+{#                        <ul class="reply-list">#}
+{#                            {% for reply in comment.replies %}#}
+{#                                <li class="reply-item">#}
+{#                                    <p class="author"><strong>{{ reply.author }}</strong></p>#}
+{#                                    <p class="date">{{ reply.created_at }}</p>#}
+{#                                    <p class="comment">{{ reply.content }}</p>#}
+{#                                </li>#}
+{#                            {% endfor %}#}
+{#                        </ul>#}
+{#                    {% endif %}#}
+{##}
+{#                    {% if user.is_authenticated %}#}
+{#                    <!-- Reply Form -->#}
+{#                    <form method="post" action="{% url 'post_comment' guide.id %}" class="reply-form" id="reply-form-{{ comment.id }}">#}
+{#                        {% csrf_token %}#}
+{#                        {{ form.as_p }}#}
+{#                        <input type="hidden" name="parent_id" value="{{ comment.id }}">#}
+{#                        <button type="submit" class="submit-button">Post Reply ✉️</button>#}
+{#                    </form>#}
+{#                    {% endif %}#}
+{#                </li>#}
+{#                {% endif %}#}
+{#            {% empty %}#}
+{#                <p>No comments yet. Be the first to comment!</p>#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{##}
+{#        {% if user.is_authenticated %}#}
+{#        <!-- New Comment Form -->#}
+{#        <h3>Add a Comment:</h3>#}
+{#        <form method="post" action="{% url 'post_comment' guide.id %}" class="comment-form">#}
+{#            {% csrf_token %}#}
+{#            {{ form.as_p }}#}
+{#            <button type="submit" class="submit-button">Post ✉️</button>#}
+{#        </form>#}
+{#        {% endif %}#}
+{#    </div>#}
 </div>
 {% endblock %}
 
