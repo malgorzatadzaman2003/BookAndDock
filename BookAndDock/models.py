@@ -24,6 +24,8 @@ class Guide(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default='guide')
 
+    external_id = models.IntegerField(null=True, blank=True, db_index=True)
+
     def __str__(self):
         return self.title
 

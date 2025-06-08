@@ -132,7 +132,7 @@ def add_guide(request):
                 "authorId": request.user.id,  # assuming it matches external authorId
                 "publicationDate": publication_date,  # adjust if field differs
                 "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
-                #"links": guide.links,   # Add logic if you have links field
+                "links": guide.links,   # Add logic if you have links field
                 "guideStatus": guide.status.upper(),
                 "guideCategory": guide.category.upper()
             }
@@ -188,40 +188,56 @@ def delete_guide_editor(request, guide_id):
 
 @login_required
 def modify_guide(request, pk):
-    guide = get_object_or_404(Guide, pk=pk)
+    # Fetch guide from external API
+    try:
+        get_response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{pk}')
+        if get_response.status_code != 200:
+            return HttpResponse(f"Failed to fetch guide. Status: {get_response.status_code}",
+                                status=get_response.status_code)
+        external_data = get_response.json()
+    except requests.RequestException as e:
+        return HttpResponse(f"Error fetching guide: {e}", status=500)
+
+    # Get or create local guide linked to external ID
+    guide, _ = Guide.objects.get_or_create(
+        external_id=pk,
+        defaults={
+            'title': external_data.get('title', ''),
+            'description': external_data.get('content', ''),
+            'status': external_data.get('guideStatus', 'DRAFT'),
+            'category': external_data.get('guideCategory', 'GUIDE'),
+            'created_by': request.user,  # fallback ownership
+            'links': external_data.get('links', []),
+        }
+    )
 
     if request.method == 'POST':
         form = GuideForm(request.POST, request.FILES, instance=guide)
         if form.is_valid():
             guide = form.save(commit=False)
-
-            #links_list = form.cleaned_data.get('links', [])
-            #guide.links = links_list
+            guide.links = form.cleaned_data.get('links', [])
+            guide.save()
 
             publication_date = datetime.now().replace(microsecond=0).isoformat()
-
-            guide.save()
 
             api_payload = {
                 "title": guide.title,
                 "content": guide.description,
-                "authorId": request.user.id,  # assuming it matches external authorId
-                "publicationDate": publication_date,  # adjust if field differs
+                "authorId": request.user.id,
+                "publicationDate": publication_date,
                 "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
-               # "links": links_list,  # Add logic if you have links field
+                "links": guide.links,
                 "guideStatus": guide.status.upper(),
                 "guideCategory": guide.category.upper()
             }
 
-            print(json.dumps(api_payload, indent=2))
-
             try:
                 response = requests.put(
-                    f"https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide.id}",
+                    f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{pk}',
                     json=api_payload
                 )
                 response.raise_for_status()
-                print(f"Guide {guide.id} synced to API.")
+                print(f"Guide {pk} synced to API.")
             except requests.RequestException as e:
                 print(f"Failed to sync guide to API: {e}")
 
@@ -230,25 +246,14 @@ def modify_guide(request, pk):
             else:
                 return redirect('profile_guides')
 
-
     else:
-        initial_links = guide.links
-        if isinstance(initial_links, str):
-
-            try:
-                # Try to parse stringified list
-                initial_links = json.loads(initial_links)
-            except json.JSONDecodeError:
-                try:
-                    import ast
-                    initial_links = ast.literal_eval(initial_links)
-                except Exception:
-                    initial_links = [initial_links]  # fallback
-
+        # Populate form with external API values if available
+        initial_links = external_data.get('links', [])
         if not isinstance(initial_links, list):
             initial_links = [str(initial_links)]
-
-        form = GuideForm(instance=guide, initial={'links': "\n".join(initial_links)})
+        form = GuideForm(instance=guide, initial={
+            'links': "\n".join(initial_links)
+        })
 
     return render(request, 'editor-guide/modify_guide.html', {'form': form, 'guide': guide})
 
