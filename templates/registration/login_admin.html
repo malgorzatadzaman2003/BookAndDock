@@ -19,7 +19,7 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
 
     const email = document.getElementById('email').value;
 
-    fetch('http://localhost:8080/users', {
+    fetch('https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/users', {
         method: 'GET',
         headers: {
             'Authorization': email

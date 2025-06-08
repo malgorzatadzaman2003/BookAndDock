@@ -6,13 +6,13 @@
 <div class="profile-container">
     <h2>My Guides</h2>
 
-    <!-- Tab Navigation -->
+    <!-- ??? check -->
     <div class="tab-container">
         <button class="tab-button active" data-tab="published">Published Guides</button>
         <button class="tab-button" data-tab="drafts">Guides to be Accepted</button>
     </div>
 
-    <!-- Published Guides Section -->
+    <!-- published -->
     <div id="published" class="tab-content active">
         {% if published_guides %}
             <section class="recipe-grid">
@@ -32,7 +32,6 @@
         {% endif %}
     </div>
 
-    <!-- Drafts / To Be Accepted Section -->
     <div id="drafts" class="tab-content">
         {% if unpublished_guides %}
             <section class="recipe-grid">

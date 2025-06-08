@@ -35,7 +35,7 @@ from .forms import GuideForm, CommentForm, SearchForm, RegisterForm, EmailOnlyLo
 
 def home(request):
     # Fetch all guides and articles (combined) from external API
-    response = requests.get('http://localhost:8080/guides')
+    response = requests.get('https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides')
     if response.status_code != 200:
         return render(request, 'home.html', {
             'published_items': [],
@@ -88,7 +88,7 @@ def account_view(request):
 def guide_detail_editor(request, guide_id):
 
     try:
-        response = requests.get(f'http://localhost:8080/guides/{guide_id}')
+        response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide_id}')
         if response.status_code != 200:
             return HttpResponse("Guide not found", status=response.status_code)
         guide = response.json()
@@ -101,7 +101,7 @@ def guide_detail_editor(request, guide_id):
                 guide['publicationDate'] = None
         return render(request, 'editor-guide/guide_detail.html', {
             'guide': guide,
-            'links': guide.get('links', []),
+            #'links': guide.get('links', []),
             'comments': guide.get('comments', []),
             'form': CommentForm(),
         })
@@ -118,7 +118,7 @@ def add_guide(request):
             guide = form.save(commit=False)
             guide.created_by = request.user
             guide.status = request.POST.get('status', 'DRAFT').upper()  # e.g., DRAFT, BACKLOG, PUBLISHED
-            guide.links = form.cleaned_data.get('links', [])
+            #guide.links = form.cleaned_data.get('links', [])
 
             guide.save()
             form.save_m2m()
@@ -132,7 +132,7 @@ def add_guide(request):
                 "authorId": request.user.id,  # assuming it matches external authorId
                 "publicationDate": publication_date,  # adjust if field differs
                 "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
-                "links": guide.links,   # Add logic if you have links field
+                #"links": guide.links,   # Add logic if you have links field
                 "guideStatus": guide.status.upper(),
                 "guideCategory": guide.category.upper()
             }
@@ -140,7 +140,7 @@ def add_guide(request):
             print(json.dumps(api_payload, indent=2))
 
             try:
-                response = requests.post("http://localhost:8080/guides", json=api_payload)
+                response = requests.post("https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides", json=api_payload)
                 print(response.text)
                 if response.status_code in [200, 201]:
                     print("Guide synced to API successfully.")
@@ -162,7 +162,7 @@ def add_guide(request):
 def delete_guide_editor(request, guide_id):
     try:
         # Fetch guide details first to get the category
-        get_response = requests.get(f'http://localhost:8080/guides/{guide_id}')
+        get_response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide_id}')
         if get_response.status_code != 200:
             return HttpResponse(f"Failed to fetch guide. Status: {get_response.status_code}",
                                 status=get_response.status_code)
@@ -171,7 +171,7 @@ def delete_guide_editor(request, guide_id):
         category = guide_data.get('guideCategory', '').upper()  # Normalize to uppercase for safety
 
         # Delete the guide
-        del_response = requests.delete(f'http://localhost:8080/guides/{guide_id}')
+        del_response = requests.delete(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide_id}')
         if del_response.status_code in [200, 204]:
             if category == 'GUIDE':
                 return redirect('profile_guides')
@@ -195,8 +195,8 @@ def modify_guide(request, pk):
         if form.is_valid():
             guide = form.save(commit=False)
 
-            links_list = form.cleaned_data.get('links', [])
-            guide.links = links_list
+            #links_list = form.cleaned_data.get('links', [])
+            #guide.links = links_list
 
             publication_date = datetime.now().replace(microsecond=0).isoformat()
 
@@ -208,7 +208,7 @@ def modify_guide(request, pk):
                 "authorId": request.user.id,  # assuming it matches external authorId
                 "publicationDate": publication_date,  # adjust if field differs
                 "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
-                "links": links_list,  # Add logic if you have links field
+               # "links": links_list,  # Add logic if you have links field
                 "guideStatus": guide.status.upper(),
                 "guideCategory": guide.category.upper()
             }
@@ -217,7 +217,7 @@ def modify_guide(request, pk):
 
             try:
                 response = requests.put(
-                    f"http://localhost:8080/guides/{guide.id}",
+                    f"https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide.id}",
                     json=api_payload
                 )
                 response.raise_for_status()
@@ -281,7 +281,7 @@ def post_comment(request, pk):
 def profile_guides(request):
     user_id = request.user.id
     # Example of fetching from external backend API
-    response = requests.get(f'http://localhost:8080/guides/author/{user_id}')
+    response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/author/{user_id}')
     guides = response.json()
 
     def convert_dates(guides_list):
@@ -310,7 +310,7 @@ def profile_guides(request):
 @login_required
 def profile_articles(request):
     user_id = request.user.id
-    response = requests.get(f'http://localhost:8080/guides/author/{user_id}')
+    response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/author/{user_id}')
     articles = response.json()
 
     def convert_dates(guides_list):
@@ -337,7 +337,7 @@ def profile_articles(request):
 @login_required
 def docks(request):
     try:
-        response = requests.get('http://localhost:8080/ports')
+        response = requests.get('https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/ports')
         docks = response.json() if response.status_code == 200 else []
     except requests.exceptions.RequestException:
         docks = []
@@ -528,14 +528,14 @@ def custom_login_editor(request):
 @login_required
 def accept_dock(request, dock_id):
     try:
-        get_response = requests.get(f'http://localhost:8080/ports/{dock_id}')
+        get_response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/ports/{dock_id}')
         if get_response.status_code == 200:
             dock_data = get_response.json()
 
             dock_data['is_approved'] = True
 
             put_response = requests.put(
-                f'http://localhost:8080/ports/{dock_id}/approve',
+                f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/ports/{dock_id}/approve',
                 json=dock_data
             )
 
@@ -554,7 +554,7 @@ def accept_dock(request, dock_id):
 @login_required
 def delete_dock(request, dock_id):
     try:
-        response = requests.delete(f'http://localhost:8080/ports/{dock_id}')
+        response = requests.delete(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/ports/{dock_id}')
         if response.status_code in [200, 204]:
             return redirect('docks')
         else:
@@ -566,7 +566,7 @@ def delete_dock(request, dock_id):
 def dock_detail(request, dock_id):
     try:
         # Fetch dock details from backend
-        dock_response = requests.get(f'http://localhost:8080/ports/{dock_id}')
+        dock_response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/ports/{dock_id}')
         if dock_response.status_code != 200:
             return HttpResponse("Failed to retrieve dock details", status=dock_response.status_code)
         dock = dock_response.json()
@@ -612,7 +612,7 @@ def delete_dock_space(request, space_id):
 @login_required
 def manage_guides(request):
     try:
-        response = requests.get('http://localhost:8080/guides')
+        response = requests.get('https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides')
         guides = response.json() if response.status_code == 200 else []
     except requests.exceptions.RequestException:
         guides = []
@@ -629,7 +629,7 @@ def manage_guides(request):
 def accept_guide(request, guide_id):
     try:
         # Get existing guide data
-        response = requests.get(f'http://localhost:8080/guides/{guide_id}')
+        response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide_id}')
         if response.status_code != 200:
             return HttpResponse("Guide not found", status=response.status_code)
         guide_data = response.json()
@@ -639,7 +639,7 @@ def accept_guide(request, guide_id):
 
         # Send updated data back
         put_response = requests.put(
-            f'http://localhost:8080/guides/{guide_id}',
+            f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide_id}',
             json=guide_data
         )
         if put_response.status_code in [200, 204]:
@@ -651,7 +651,7 @@ def accept_guide(request, guide_id):
 @login_required
 def delete_guide(request, guide_id):
     try:
-        response = requests.delete(f'http://localhost:8080/guides/{guide_id}')
+        response = requests.delete(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide_id}')
         if response.status_code in [200, 204]:
             return redirect('manage_guides')
         return HttpResponse("Failed to delete guide", status=response.status_code)
@@ -661,7 +661,7 @@ def delete_guide(request, guide_id):
 @login_required
 def guide_detail(request, guide_id):
     try:
-        response = requests.get(f'http://localhost:8080/guides/{guide_id}')
+        response = requests.get(f'guides/{guide_id}')
         if response.status_code != 200:
             return HttpResponse("Guide not found", status=response.status_code)
         guide = response.json()
@@ -672,7 +672,7 @@ def guide_detail(request, guide_id):
 @login_required
 def users(request):
     try:
-        response = requests.get('http://localhost:8080/users/users')
+        response = requests.get('https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/users/users')
         users = response.json() if response.status_code == 200 else []
     except requests.exceptions.RequestException as e:
         return HttpResponse(f"Error fetching users: {e}", status=500)
@@ -683,7 +683,7 @@ def users(request):
 def ban_user(request, user_email):
     try:
         response = requests.delete(
-            'http://localhost:8080/users',
+            'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/users',
             json={"email": user_email}
         )
         if response.status_code in [200, 204]:
@@ -695,7 +695,7 @@ def ban_user(request, user_email):
 @login_required
 def user_detail(request, user_id):
     try:
-        response = requests.get(f'http://localhost:8080/users/users/{user_id}')
+        response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/users/users/{user_id}')
         if response.status_code != 200:
             return HttpResponse("User not found", status=response.status_code)
         user = response.json()
