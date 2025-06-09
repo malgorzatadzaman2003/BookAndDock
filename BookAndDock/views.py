@@ -469,11 +469,18 @@ def docks(request):
     except requests.exceptions.RequestException:
         docks = []
 
-    # Split docks into two lists
+
+    form = SearchForm(request.GET)
+    if form.is_valid() and form.cleaned_data['query']:
+        query = form.cleaned_data['query'].lower()
+        docks = [dock for dock in docks if query in dock['name'].lower()]
+
+    # Split after filtering
     published_docks = [dock for dock in docks if dock['approved']]
     docks_to_be_accepted = [dock for dock in docks if not dock['approved']]
 
     return render(request, 'profile_docks.html', {
+        'form': form,
         'published_docks': published_docks,
         'docks_to_be_accepted': docks_to_be_accepted,
     })
@@ -744,21 +751,27 @@ def manage_guides(request):
     except requests.exceptions.RequestException:
         guides = []
 
+    # Handle search
+    form = SearchForm(request.GET)
+    if form.is_valid() and form.cleaned_data['query']:
+        query = form.cleaned_data['query'].lower()
+        guides = [g for g in guides if query in g['title'].lower()]
+
     unpublished_guides = [g for g in guides if g['guideStatus'] == 'DRAFT']
     published_guides = [g for g in guides if not g['guideStatus'] == 'DRAFT']
 
     role = request.session.get('role')
 
+    context = {
+        'form': form,
+        'published_guides': published_guides,
+        'unpublished_guides': unpublished_guides,
+    }
+
     if role == 'EDITOR':
-        return render(request, 'profile_guides.html', {
-            'published_guides': published_guides,
-            'unpublished_guides': unpublished_guides,
-        })
+        return render(request, 'profile_guides.html', context)
     if role == 'ADMIN':
-        return render(request, 'profile_guides_manage.html', {
-            'published_guides': published_guides,
-            'unpublished_guides': unpublished_guides,
-        })
+        return render(request, 'profile_guides_manage.html', context)
 
 @login_required
 def accept_guide(request, guide_id):

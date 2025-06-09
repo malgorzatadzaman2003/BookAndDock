@@ -6,7 +6,11 @@
 <div class="profile-container">
     <h2>My Guides</h2>
 
-    <!-- ??? check -->
+    <form method="get" class="search" style="margin: 20px auto; text-align: center;">
+        {{ form.as_p }}
+        <button type="submit" class="btn view-details-btn" style="margin-left: 10px;">Search</button>
+    </form>
+
     <div class="tab-container">
         <button class="tab-button active" data-tab="published">Published Guides</button>
         <button class="tab-button" data-tab="drafts">Guides to be Accepted</button>

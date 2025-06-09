@@ -6,6 +6,11 @@
 <div class="profile-container">
     <h2>All Docks</h2>
 
+    <form method="get" class="search" style="margin: 20px auto; text-align: center;">
+        {{ form.as_p }}
+        <button type="submit" class="btn view-details-btn" style="margin-left: 10px;">Search</button>
+    </form>
+
     <!-- Tab Navigation -->
     <div class="tab-container">
         <button class="tab-button active" data-tab="published">Published Docks</button>
