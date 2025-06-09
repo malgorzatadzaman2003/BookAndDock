@@ -16,11 +16,10 @@
         <article class="recipe-card">
             <h3>{{ item.title }} <small>({{ item.guideCategory|title }})</small></h3>
 
-            {% if item.images and item.images.0 %}
-                <img src="{{ item.images.0 }}" alt="{{ item.title }} image">
-            {% elif item.image %}
-                <img src="{{ item.image.url }}" alt="{{ item.title }} image">
+            {% if item.image_urls and item.image_urls.0 %}
+                <img src="{{ item.image_urls.0 }}" alt="{{ item.title }} image">
             {% endif %}
+        
 
             {% if item.publicationDate %}
                 <p class="date">Published on: {{ item.publicationDate|date:"Y-m-d" }}</p>

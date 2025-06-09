@@ -106,6 +106,10 @@ def home(request):
             if query in item['title'].lower()
         ]
 
+    for item in published_items:
+        image_ids = item.get("images", [])
+        item["image_urls"] = fetch_image_urls(image_ids)
+
     return render(request, 'home.html', {
         'published_items': published_items,
         'form': form
