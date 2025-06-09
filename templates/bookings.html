@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-container">
+    <h2>Bookings</h2>
+
+    {% if bookings %}
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Sailor ID</th>
+                <th>Dock ID</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Total Price</th>
+                <th>Actions</th>
+            </tr>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>
+                    <a href="{% url 'user_detail' booking.sailorId %}">
+                        {{ booking.sailorId }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{% url 'dock_detail' booking.dockId %}">
+                        {{ booking.dockId }}
+                    </a>
+                </td>
+                <td>{{ booking.startDate }}</td>
+                <td>{{ booking.endDate }}</td>
+                <td>{{ booking.totalPrice }}</td>
+                <td>
+                    <a href="{% url 'booking_detail' booking.id %}">Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No bookings found.</p>
+    {% endif %}
+</div>
+{% endblock %}

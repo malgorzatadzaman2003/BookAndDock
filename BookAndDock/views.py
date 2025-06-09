@@ -853,3 +853,25 @@ def user_detail(request, user_id):
     except requests.exceptions.RequestException as e:
         return HttpResponse(f"Error fetching user: {e}", status=500)
 
+
+@login_required
+def bookings(request):
+    try:
+        response = requests.get('https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/bookings')
+        bookings_data = response.json() if response.status_code == 200 else []
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error fetching bookings: {e}", status=500)
+
+    return render(request, 'bookings.html', {'bookings': bookings_data})
+
+@login_required
+def booking_detail(request, booking_id):
+    try:
+        response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/bookings/{booking_id}')
+        if response.status_code != 200:
+            return HttpResponse("Booking not found", status=response.status_code)
+        booking = response.json()
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f"Error fetching booking: {e}", status=500)
+
+    return render(request, 'booking_detail.html', {'booking': booking})

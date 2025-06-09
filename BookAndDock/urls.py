@@ -43,6 +43,9 @@ urlpatterns = [
     path('admin-panel/users/', views.users, name='users'),
     path('admin-panel/users/<int:user_id>/', views.user_detail, name='user_detail'),
     path('admin-panel/users/<str:user_email>/ban/', views.ban_user, name='ban_user'),
+    path('admin-panel/bookings/', views.bookings, name='bookings'),
+    path('admin-panel/bookings/<int:booking_id>/', views.booking_detail, name='booking_detail'),
+    path('admin-panel/users/<int:user_id>/', views.user_detail, name='user_detail'),
 
 
 # API Endpoint for Guides
