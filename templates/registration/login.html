@@ -32,33 +32,42 @@ document.getElementById('login-form').addEventListener('submit', function(e) {
         return response.json();
     })
     .then(data => {
-    console.log('Login success:', data);
-
-    fetch("{% url 'custom_login' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie('csrftoken')
-        },
-        body: JSON.stringify({
-            username: data.username,
-            email: data.email,
-            password: 'editor123',
-            name: data.name,
-            surname: data.surname,
-            phoneNumber: data.phoneNumber,
-            role: data.role
-        })
-    })
-    .then(response => {
-        if (response.ok) {
-            window.location.href = "{% url 'profile_guides' %}"; // Redirect to home
-        } else {
-            console.error('Failed to log into Django');
+        if (data.role !== 'EDITOR') {
+            alert('You are not an editor.');
+            return; // Stop login process
         }
+
+        console.log('Login success:', data);
+
+        fetch("{% url 'custom_login' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                username: data.username,
+                email: data.email,
+                password: 'editor123',  // this hardcoded value is presumably handled on your backend
+                name: data.name,
+                surname: data.surname,
+                phoneNumber: data.phoneNumber,
+                role: data.role
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = "{% url 'profile_guides' %}";
+            } else {
+                console.error('Failed to log into Django');
+            }
+        })
+        .catch(error => console.error('Django login error:', error));
     })
-    .catch(error => console.error('Django login error:', error));
-})
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Failed to retrieve user data.');
+    });
 });
 
 function getCookie(name) {
@@ -67,7 +76,6 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            // Check if this cookie starts with the name we want
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -77,4 +85,5 @@ function getCookie(name) {
     return cookieValue;
 }
 </script>
+
 {% endblock %}
