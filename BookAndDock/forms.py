@@ -55,7 +55,7 @@ class CommentForm(forms.ModelForm):
 
 class SearchForm(forms.Form):
     query = forms.CharField(label='', validators=[MinLengthValidator(1)], max_length=100, required=False,
-                            widget=forms.TextInput(attrs={'placeholder': '🔍 Search guides/articles'}))
+                            widget=forms.TextInput(attrs={'placeholder': '🔍 Search'}))
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
