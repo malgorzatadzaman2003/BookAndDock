@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-container">
+    <h2>User Details</h2>
+
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Name:</strong> {{ user.name }}</p>
+    <p><strong>Surname:</strong> {{ user.surname }}</p>
+    <p><strong>Phone Number:</strong> {{ user.phoneNumber }}</p>
+    <p><strong>Role:</strong> {{ user.role }}</p>
+    <p><strong>Deleted:</strong> {{ user.deleted }}</p>
+
+    <a href="{% url 'users' %}" class="btn view-details-btn" style="margin-top: 20px;">Back to Users</a>
+</div>
+{% endblock %}
