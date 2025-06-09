@@ -744,34 +744,35 @@ def manage_guides(request):
     except requests.exceptions.RequestException:
         guides = []
 
-    published_guides = [g for g in guides if g.get('approved')]
-    unpublished_guides = [g for g in guides if not g.get('approved')]
+    unpublished_guides = [g for g in guides if g['guideStatus'] == 'DRAFT']
+    published_guides = [g for g in guides if not g['guideStatus'] == 'DRAFT']
 
-    return render(request, 'profile_guides.html', {
-        'published_guides': published_guides,
-        'unpublished_guides': unpublished_guides,
-    })
+    role = request.session.get('role')
+
+    if role == 'EDITOR':
+        return render(request, 'profile_guides.html', {
+            'published_guides': published_guides,
+            'unpublished_guides': unpublished_guides,
+        })
+    if role == 'ADMIN':
+        return render(request, 'profile_guides_manage.html', {
+            'published_guides': published_guides,
+            'unpublished_guides': unpublished_guides,
+        })
 
 @login_required
 def accept_guide(request, guide_id):
     try:
-        # Get existing guide data
-        response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide_id}')
-        if response.status_code != 200:
-            return HttpResponse("Guide not found", status=response.status_code)
-        guide_data = response.json()
-
-        # Set approved to true
-        guide_data['approved'] = True
-
-        # Send updated data back
+        # Call the new approval endpoint directly
         put_response = requests.put(
-            f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{guide_id}',
-            json=guide_data
+            f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/approve/{guide_id}'
         )
+
         if put_response.status_code in [200, 204]:
             return redirect('manage_guides')
+
         return HttpResponse("Failed to approve guide", status=put_response.status_code)
+
     except requests.exceptions.RequestException as e:
         return HttpResponse(f"Error: {e}", status=500)
 
