@@ -305,7 +305,7 @@ def modify_guide(request, pk):
             guide.links = form.cleaned_data.get('links', [])
             guide.save()
 
-            # Default to existing images from external API
+            # Default to existing images from external API now
             image_ids = external_data.get("images", [])
 
             # Upload new image if provided
