@@ -1,5 +1,6 @@
 import json
 import requests
+import base64
 
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import RedirectURLMixin
@@ -31,6 +32,38 @@ from BookDock import settings
 from .serializers import GuideSerializer
 from .models import Guide, Dock, DockSpace
 from .forms import GuideForm, CommentForm, SearchForm, RegisterForm, EmailOnlyLoginForm, ArticleForm, CustomLoginForm
+
+def image_to_base64(file):
+    return base64.b64encode(file.read()).decode('utf-8')
+
+
+def fetch_image_urls(image_ids):
+    image_urls = []
+    for image_id in image_ids:
+        try:
+            res = requests.get(
+                f"https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/images/{image_id}")
+            if res.status_code == 200:
+                img_json = res.json()
+                raw_b64 = img_json.get("base64image") or img_json.get("base64Image")
+
+                if raw_b64:
+                    import json as js
+                    try:
+                        # Try parsing as nested JSON (if stringified)
+                        nested = js.loads(raw_b64)
+                        base64_data = nested.get("base64image") or nested.get("base64Image")
+                    except (ValueError, TypeError):
+                        # It's already base64 string
+                        base64_data = raw_b64
+
+                    if base64_data and not base64_data.startswith("data:image"):
+                        base64_data = f"data:image/png;base64,{base64_data}"
+
+                    image_urls.append(base64_data)
+        except Exception as e:
+            print(f"Error fetching image {image_id}: {e}")
+    return image_urls
 
 
 def home(request):
@@ -99,9 +132,42 @@ def guide_detail_editor(request, guide_id):
             except ValueError:
                 # If parsing fails, keep original string or set None
                 guide['publicationDate'] = None
+
+        # Fetch base64 images
+        image_ids = guide.get("images", [])
+        image_urls = []
+        for image_id in image_ids:
+            img_res = requests.get(
+                f"https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/images/{image_id}")
+            if img_res.status_code == 200:
+                img_json = img_res.json()  # This should be a dict, not a string
+                # The field contains a JSON string, so parse it:
+                raw_base64_json_str = img_json.get("base64image") or img_json.get("base64Image")
+
+                if raw_base64_json_str:
+                    import json as js
+
+                    # Parse the nested JSON string to get the actual base64 data
+                    try:
+                        nested_json = js.loads(raw_base64_json_str)
+                        base64_data = nested_json.get("base64image") or nested_json.get("base64Image")
+                    except Exception as e:
+                        print(f"Failed to parse nested base64 JSON: {e}")
+                        base64_data = raw_base64_json_str  # fallback
+
+                    # Now prefix properly if needed
+                    if base64_data and not base64_data.startswith("data:image"):
+                        base64_data = f"data:image/png;base64,{base64_data}"
+
+                    image_urls.append(base64_data)
+        guide["image_urls"] = image_urls
+
+        print("GUIDE images:", image_ids)
+        print("Final image_urls:", image_urls)
+
         return render(request, 'editor-guide/guide_detail.html', {
             'guide': guide,
-            #'links': guide.get('links', []),
+            # 'links': guide.get('links', []),
             'comments': guide.get('comments', []),
             'form': CommentForm(),
         })
@@ -118,7 +184,24 @@ def add_guide(request):
             guide = form.save(commit=False)
             guide.created_by = request.user
             guide.status = request.POST.get('status', 'DRAFT').upper()  # e.g., DRAFT, BACKLOG, PUBLISHED
-            #guide.links = form.cleaned_data.get('links', [])
+            guide.links = form.cleaned_data.get('links', [])
+
+            if guide.image:
+                # Step 1: Upload image to backend and get its ID
+                base64_image = image_to_base64(guide.image.file)
+                try:
+                    img_upload_response = requests.post(
+                        "https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/images",
+                        json={"base64image": base64_image}
+                    )
+                    img_upload_response.raise_for_status()
+                    image_id = img_upload_response.json().get("id")  # Assumes backend returns {"id": 123}
+                    image_list = [image_id] if image_id else []
+                except requests.exceptions.RequestException as e:
+                    print(f"Image upload failed: {e}")
+                    image_list = []
+            else:
+                image_list = []
 
             guide.save()
             form.save_m2m()
@@ -131,7 +214,7 @@ def add_guide(request):
                 "content": guide.description,
                 "authorId": request.user.id,  # assuming it matches external authorId
                 "publicationDate": publication_date,  # adjust if field differs
-                "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
+                "images": image_list,
                 "links": guide.links,   # Add logic if you have links field
                 "guideStatus": guide.status.upper(),
                 "guideCategory": guide.category.upper()
@@ -218,6 +301,31 @@ def modify_guide(request, pk):
             guide.links = form.cleaned_data.get('links', [])
             guide.save()
 
+            image_ids = []
+
+            # Upload new image if provided
+            uploaded_file = request.FILES.get('image')
+            if uploaded_file and uploaded_file.size > 0:
+                try:
+                    # IMPORTANT: ensure fresh file pointer
+                    uploaded_file.seek(0)
+                    image_data_bytes = uploaded_file.read()
+                    if not image_data_bytes:
+                        print("Empty image content!")
+                    else:
+                        encoded_image = base64.b64encode(image_data_bytes).decode('utf-8')
+                        img_response = requests.post(
+                            "https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/images",
+                            json={"base64Image": encoded_image}
+                        )
+                        img_response.raise_for_status()
+                        image_data = img_response.json()
+                        image_id = image_data.get('id')
+                        if image_id:
+                            image_ids.append(image_id)
+                except requests.RequestException as e:
+                    print(f"Image upload failed: {e}")
+
             publication_date = datetime.now().replace(microsecond=0).isoformat()
 
             api_payload = {
@@ -225,12 +333,13 @@ def modify_guide(request, pk):
                 "content": guide.description,
                 "authorId": request.user.id,
                 "publicationDate": publication_date,
-                "images": [request.build_absolute_uri(guide.image.url)] if guide.image else [],
+                "images": image_ids,  # Now using external image IDs
                 "links": guide.links,
                 "guideStatus": guide.status.upper(),
                 "guideCategory": guide.category.upper()
             }
 
+            print(json.dumps(api_payload, indent=2))
             try:
                 response = requests.put(
                     f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/{pk}',
@@ -285,8 +394,8 @@ def post_comment(request, pk):
 @login_required
 def profile_guides(request):
     user_id = request.user.id
-    # Example of fetching from external backend API
-    response = requests.get(f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/author/{user_id}')
+    response = requests.get(
+        f'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/guides/author/{user_id}')
     guides = response.json()
 
     def convert_dates(guides_list):
@@ -304,6 +413,11 @@ def profile_guides(request):
 
     published_guides = convert_dates(published_guides)
     unpublished_guides = convert_dates(unpublished_guides)
+
+    # Add image_urls for all guides
+    for guide in published_guides + unpublished_guides:
+        image_ids = guide.get('images', [])
+        guide['image_urls'] = fetch_image_urls(image_ids)
 
     return render(request, 'profile_guides.html', {
         'published_guides': published_guides,
@@ -334,10 +448,14 @@ def profile_articles(request):
     published_articles = convert_dates(published_articles)
     unpublished_articles = convert_dates(unpublished_articles)
 
+    for article in published_articles + unpublished_articles:
+        image_ids = article.get('images', [])
+        article['image_urls'] = fetch_image_urls(image_ids)
+
     return render(request, 'profile_articles.html', {
-            'published_articles': published_articles,
-            'unpublished_articles': unpublished_articles,
-        })
+        'published_articles': published_articles,
+        'unpublished_articles': unpublished_articles,
+    })
 
 @login_required
 def docks(request):

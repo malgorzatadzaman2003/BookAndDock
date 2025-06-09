@@ -21,9 +21,9 @@
             {% for article in published_articles %}
                 <article class="recipe-card">
                     <h2>{{ article.title }}</h2>
-                    {% if article.images and article.images.0 %}
-                            <img src="{{ article.images.0 }}" alt="{{ article.title }} image" class="recipe-image">
-                    {% endif %}
+                    {% if article.image_urls and article.image_urls.0 %}
+                          <img src="{{ article.image_urls.0 }}" alt="{{ article.title }} image" class="recipe-image">
+                        {% endif %}
                     {% if article.publicationDate %}
                         <p class="date">Published: {{ article.publicationDate|date:"Y-m-d H:i" }}</p>
                     {% endif %}
@@ -44,9 +44,10 @@
                 {% for article in unpublished_articles %}
                     <article class="recipe-card">
                         <h2>{{ article.title }}</h2>
-                        {% if article.images and article.images.0 %}
-                            <img src="{{ article.images.0 }}" alt="{{ article.title }} image" class="recipe-image">
+                        {% if article.image_urls and article.image_urls.0 %}
+                          <img src="{{ article.image_urls.0 }}" alt="{{ article.title }} image" class="recipe-image">
                         {% endif %}
+
                          {% if article.publicationDate %}
                             <p class="date">Published: {{ article.publicationDate|date:"Y-m-d H:i" }}</p>
                          {% endif %}

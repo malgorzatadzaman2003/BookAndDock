@@ -21,9 +21,10 @@
                 {% for guide in published_guides %}
                     <article class="recipe-card">
                         <h2>{{ guide.title }}</h2>
-                        {% if guide.images and guide.images.0 %}
-                            <img src="{{ guide.images.0 }}" alt="{{ guide.title }} image" class="recipe-image">
+                        {% if guide.image_urls and guide.image_urls.0 %}
+                          <img src="{{ guide.image_urls.0 }}" alt="{{ guide.title }} image" class="recipe-image">
                         {% endif %}
+
                          {% if guide.publicationDate %}
                             <p class="date">Published: {{ guide.publicationDate|date:"Y-m-d H:i" }}</p>
                          {% endif %}
@@ -45,8 +46,8 @@
                 {% for guide in unpublished_guides %}
                     <article class="recipe-card">
                         <h2>{{ guide.title }}</h2>
-                        {% if guide.images and guide.images.0 %}
-                            <img src="{{ guide.images.0 }}" alt="{{ guide.title }} image" class="recipe-image">
+                        {% if guide.image_urls and guide.image_urls.0 %}
+                          <img src="{{ guide.image_urls.0 }}" alt="{{ guide.title }} image" class="recipe-image">
                         {% endif %}
 
                         {% if guide.publicationDate %}

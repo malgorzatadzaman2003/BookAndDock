@@ -7,9 +7,10 @@
     <h1 class="recipe-title">{{ guide.title }}</h1>
 
     <!-- Guide Image (from images array) -->
-    {% if guide.images and guide.images.0 %}
-        <img src="{{ guide.images.0 }}" alt="{{ guide.title }} image" class="recipe-image">
+    {% if guide.image_urls and guide.image_urls.0 %}
+      <img src="{{ guide.image_urls.0 }}" alt="{{ guide.title }} image" class="recipe-image">
     {% endif %}
+
 
     <p class="recipe-description">{{ guide.content }}</p>
 
