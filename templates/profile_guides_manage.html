@@ -24,8 +24,11 @@
                     <article class="recipe-card">
                         <h2>{{ guide.title }}</h2>
                         <p class="date">Published: {{ guide.publicationDate|date:"Y-m-d H:i" }}</p>
+                        {% if guide.image_urls and guide.image_urls.0 %}
+                          <img src="{{ guide.image_urls.0 }}" alt="{{ guide.title }} image" class="recipe-image">
+                        {% endif %}
                         <p>{{ guide.content|truncatewords:30 }}</p>
-                        <a href="{% url 'guide_detail' guide.id %}">View Guide</a>
+                        <a href="{% url 'guide_detail_editor' guide.id %}">View Guide</a>
                         <a href="{% url 'accept_guide' guide.id %}" class="edit-link">Accept</a>
                         <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Delete</a>
                     </article>
@@ -42,8 +45,11 @@
                 {% for guide in unpublished_guides %}
                     <article class="recipe-card">
                         <h2>{{ guide.title }}</h2>
+                        {% if guide.image_urls and guide.image_urls.0 %}
+                          <img src="{{ guide.image_urls.0 }}" alt="{{ guide.title }} image" class="recipe-image">
+                        {% endif %}
                         <p>{{ guide.content|truncatewords:30 }}</p>
-                        <a href="{% url 'guide_detail' guide.id %}">View Guide</a>
+                        <a href="{% url 'guide_detail_editor' guide.id %}">View Guide</a>
                         <a href="{% url 'accept_guide' guide.id %}" class="edit-link">Accept</a>
                         <a href="{% url 'delete_guide' guide.id %}" class="delete-link">Discard</a>
                     </article>

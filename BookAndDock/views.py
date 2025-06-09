@@ -849,7 +849,7 @@ def user_detail(request, user_id):
         if response.status_code != 200:
             return HttpResponse("User not found", status=response.status_code)
         user_data = response.json()
-        return render(request, 'user_detail.html', {'user': user_data})
+        return render(request, 'user_detail.html', {'detail_user': user_data})
     except requests.exceptions.RequestException as e:
         return HttpResponse(f"Error fetching user: {e}", status=500)
 
