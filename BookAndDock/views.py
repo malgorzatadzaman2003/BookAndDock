@@ -305,18 +305,16 @@ def modify_guide(request, pk):
             guide.links = form.cleaned_data.get('links', [])
             guide.save()
 
-            image_ids = []
+            # Default to existing images from external API
+            image_ids = external_data.get("images", [])
 
             # Upload new image if provided
             uploaded_file = request.FILES.get('image')
             if uploaded_file and uploaded_file.size > 0:
                 try:
-                    # IMPORTANT: ensure fresh file pointer
                     uploaded_file.seek(0)
                     image_data_bytes = uploaded_file.read()
-                    if not image_data_bytes:
-                        print("Empty image content!")
-                    else:
+                    if image_data_bytes:
                         encoded_image = base64.b64encode(image_data_bytes).decode('utf-8')
                         img_response = requests.post(
                             "https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/images",
@@ -326,7 +324,7 @@ def modify_guide(request, pk):
                         image_data = img_response.json()
                         image_id = image_data.get('id')
                         if image_id:
-                            image_ids.append(image_id)
+                            image_ids = [image_id]  # Replace with the new one
                 except requests.RequestException as e:
                     print(f"Image upload failed: {e}")
 

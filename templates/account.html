@@ -4,7 +4,13 @@
 {% block content %}
 
 <div class="profile-container">
-    <h2>Hello ADMIN!</h2>
+    {% if request.session.role == 'EDITOR' %}
+        <h2>Hello EDITOR!</h2>
+    {% endif %}
+
+    {% if request.session.role == 'ADMIN' %}
+        <h2>Hello ADMIN!</h2>
+    {% endif %}
 
     <!-- Delete Account Section -->
     <div class="delete-account-container">
