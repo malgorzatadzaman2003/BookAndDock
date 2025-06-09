@@ -814,22 +814,31 @@ def guide_detail(request, guide_id):
 def users(request):
     try:
         response = requests.get('https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/users/users')
-        users = response.json() if response.status_code == 200 else []
+        all_users = response.json() if response.status_code == 200 else []
     except requests.exceptions.RequestException as e:
         return HttpResponse(f"Error fetching users: {e}", status=500)
 
-    return render(request, 'admin_users.html', {'users': users})
+    # Filter out deleted users
+    active_users = [user for user in all_users if not user.get("deleted")]
+
+    return render(request, 'admin_users.html', {'users': active_users})
 
 @login_required
 def ban_user(request, user_email):
     try:
         response = requests.delete(
             'https://bandd-se-2025-dqe3g7ewf8b7gccf.northeurope-01.azurewebsites.net/users',
-            json={"email": user_email}
+            headers={'Authorization': user_email}
         )
+
         if response.status_code in [200, 204]:
-            return redirect('users')
-        return HttpResponse("Failed to ban user", status=response.status_code)
+            if response.text.strip().lower() == 'true':
+                return redirect('users')
+            else:
+                return HttpResponse("User could not be banned (backend returned false).", status=400)
+
+        return HttpResponse("Failed to contact user API.", status=response.status_code)
+
     except requests.exceptions.RequestException as e:
         return HttpResponse(f"Error banning user: {e}", status=500)
 
