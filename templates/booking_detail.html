@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-container">
+    <h2>Booking Details</h2>
+
+    <p><strong>Booking ID:</strong> {{ booking.id }}</p>
+    <p><strong>Sailor ID:</strong> {{ booking.sailorId }}</p>
+    <p><strong>Dock ID:</strong> {{ booking.dockId }}</p>
+    <p><strong>Start Date:</strong> {{ booking.startDate }}</p>
+    <p><strong>End Date:</strong> {{ booking.endDate }}</p>
+    <p><strong>People:</strong> {{ booking.people }}</p>
+    <p><strong>Payment Method:</strong> {{ booking.paymentMethod }}</p>
+    <p><strong>Payment Status:</strong> {{ booking.paymentStatus }}</p>
+    <p><strong>Total Price:</strong> {{ booking.totalPrice }}</p>
+
+    <a href="{% url 'bookings' %}" class="btn view-details-btn" style="margin-top: 20px;">Back to Bookings</a>
+</div>
+{% endblock %}
